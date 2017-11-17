@@ -1,0 +1,39 @@
+{
+  "name": "user_profile",
+  "version": "1.0.0",
+  "description": "User Profile is a clean, simple and minimal API to create your own profile and store information about yourself",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp scripts",
+    "start": "concurrently \"tsc -w -p ./\" \"node dist/index.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sahil-khanna/user-profile-expressjs.git"
+  },
+  "keywords": [
+    "profile"
+  ],
+  "author": "sahil.khanna",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sahil-khanna/user-profile-expressjs/issues"
+  },
+  "homepage": "https://github.com/sahil-khanna/user-profile-expressjs#readme",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "concurrently": "^3.5.0",
+    "debug": "^3.1.0",
+    "express": "^4.16.2",
+    "morgan": "^1.9.0",
+    "typescript": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.16.8",
+    "@types/debug": "0.0.30",
+    "@types/express": "^4.0.39",
+    "@types/morgan": "^1.7.35",
+    "@types/node": "^8.0.53"
+  }
+}
