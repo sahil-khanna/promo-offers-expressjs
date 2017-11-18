@@ -3,6 +3,8 @@ import * as express from 'express';
 import * as logger from 'morgan';
 import * as bodyParser from 'body-parser';
 
+import {UserController} from './Controllers/UserController';
+
 // Creates and configures an ExpressJS web server.
 class App {
 
@@ -30,11 +32,22 @@ class App {
      * API endpoints */
     let router = express.Router();
     // placeholder route handler
-    router.get('/', (req, res, next) => {
+    // router.get('/', (req, res, next) => {
+    //   res.json({
+    //     message: 'Hello World!'
+    //   });
+    // });
+    
+    // this.express.use(UserController.route, new UserController().router);
+
+    router.get('/api/1.0/*', (req, res) => {
+      console.log(req.url);
       res.json({
-        message: 'Hello World!'
+        code: 0,
+        message: 'Hello World'
       });
     });
+
     this.express.use('/', router);
   }
 
