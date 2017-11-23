@@ -1,6 +1,6 @@
 import {Utils} from '../helper/Utils';
 
-//TODO: Add password, created and modified dates as well
+//TODO: Add dob, created and modified dates as well
 
 export class User {
     firstName: string;
@@ -8,6 +8,7 @@ export class User {
     email: string;
     gender: boolean;    // True = male, False = female
     mobile: string;
+    password: string;
 
     constructor(_user) {
         if (_user) {
@@ -16,6 +17,8 @@ export class User {
             this.email = _user.email;
             this.mobile = _user.mobile;
             this.gender = _user.gender;
+            this.password = _user.password;
+            
         }
     }
 }

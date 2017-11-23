@@ -23,6 +23,7 @@
   "homepage": "https://github.com/sahil-khanna/user-profile-expressjs#readme",
   "dependencies": {
     "@types/mongodb": "^2.2.15",
+    "bcrypt": "^1.0.3",
     "body-parser": "^1.18.2",
     "concurrently": "^3.5.0",
     "debug": "^3.1.0",

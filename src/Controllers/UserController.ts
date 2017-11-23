@@ -3,6 +3,8 @@ import {Validations} from '../helper/Validations';
 import {Constants} from '../helper/Constants';
 import {Db, UpdateWriteOpResult} from 'mongodb';
 import {User} from '../models/User';
+import {CryptoHelper} from '../helper/CryptoHelper';
+import {Utils} from '../helper/Utils';
 
 export class UserController {
 
@@ -16,11 +18,61 @@ export class UserController {
     }
 
     public login(req: Request, res: Response) {
-        res.json({
-            code: 0,
-            message: 'Login',
-            data: req.body
+        let user: User = new User({
+            email: req.body.email,
+            password: req.body.password
+        });
+
+        let errorMessage;
+        if (!Validations.isEmailValid(user.email)) {
+            errorMessage = 'Email is not valid';
+        }
+        else if (Utils.nullToObject(user.password, '').length === 0) {
+            errorMessage = 'Password is not valid';
+        }
+
+        if (errorMessage) {
+            res.json({
+                code: -1,
+                message: errorMessage
+            });
+            return;
+        }
+
+        const checkPassword = (_user: User) => {
+            CryptoHelper.bycryptCompare(req.body.password, _user.password)
+            .then(_resp => {
+                if (_resp) {
+                    res.json({
+                        code: 0,
+                        message: 'Login successful',
+                        data: null
+                    });
+                }
+                else {
+                    res.json({
+                        code: -1,
+                        message: 'Invalid username or password',
+                        data: null
+                    });
+                }                
+            });
+        };
+
+        this.db.collection(Constants.DB_COLLECTIONS.USER).findOne({
+            email: user.email
         })
+        .then(_dbResult => {
+            if (!_dbResult) {
+                res.json({
+                    code: -1,
+                    message: 'Invalid username or password',
+                    data: null
+                });
+                return;
+            }
+            checkPassword(_dbResult);
+        });    
     }
 
     public register(req: Request, res: Response) {
@@ -50,6 +102,9 @@ export class UserController {
         else if (!Validations.isGenderValid(user.gender)) {
             errorMessage = 'Gender is not valid';
         }
+        else if (Utils.nullToObject(user.password, '').length === 0) {
+            errorMessage = 'Password is not valid';
+        }
 
         if (errorMessage) {
             res.json({
@@ -60,26 +115,35 @@ export class UserController {
         }
 
         // Insert into DB is not already inserted
-        this.db.collection(Constants.dbCollections.user).updateOne({
-            email: user.email
-        }, {
-            $setOnInsert: user,
-        }, {
-            upsert: true
-        })
-        .then(_dbResult => {
-            if ('upserted' in _dbResult.result) {
-                res.json({
-                    code: 0,
-                    message: 'User registered'
-                });
-            }
-            else {
-                res.json({
-                    code: -1,
-                    message: 'User already registered'
-                });
-            }
+        const inesrtInDB = () => {
+            this.db.collection(Constants.DB_COLLECTIONS.USER).updateOne({
+                email: user.email
+            }, {
+                $setOnInsert: user,
+            }, {
+                upsert: true
+            })
+            .then(_dbResult => {
+                if ('upserted' in _dbResult.result) {
+                    res.json({
+                        code: 0,
+                        message: 'User registered'
+                    });
+                }
+                else {
+                    res.json({
+                        code: -1,
+                        message: 'User already registered'
+                    });
+                }
+            });
+        };
+        
+        //Bycrypt password
+        CryptoHelper.bycrypt(req.body.password)
+        .then(_hash => {
+            user.password = _hash.toString();
+            inesrtInDB();
         });
     }
 }
