@@ -18,19 +18,18 @@ class App {
   constructor() {
     this.express = express();
     this.initDB();
-    this.middleware();
-    this.routes();
   }
 
   //TODO: Init route and middleware when DB finishes initializing
   private initDB() {
     let mongoClient = new MongoClient().connect('mongodb://sahil.khanna:MyPassword@ds113736.mlab.com:13736/user-profile')
     .then((_db) => {
-      console.log(_db);
       this.db = _db;
+      this.middleware();
+      this.routes();
     })
     .catch((_err) => {
-      console.log(_err);
+      console.log('***Error***' + _err);
     })
   }
 
@@ -52,12 +51,9 @@ class App {
     let app = this.express;
     // placeholder route handler
 
-    console.log(this.db);
-
     app.post(urlPrefix + 'login', new UserController(this.db).login);
     app.post(urlPrefix + 'register', new UserController(this.db).register);
   }
-
 }
 
 export default new App().express;
