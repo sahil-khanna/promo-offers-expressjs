@@ -38,3 +38,33 @@ ___
 	"message": "User already registered"
 }
 ```
+___
+### Login
+
+**URL:** http://localhost:3000/api/1.0/login
+
+**Type:** POST
+
+**Request:**
+```javascript
+{
+	"email": "email@gmail.com",
+	"password": "passwordww"
+}
+```
+
+**Response 1:**
+```javascript
+{
+	"code": 0,
+	"message": "Login successful"
+}
+```
+
+**Response 2:**
+```javascript
+{
+	"code": -1,
+	"message": "Invalid username or password"
+}
+```
