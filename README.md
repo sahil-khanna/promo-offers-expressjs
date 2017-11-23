@@ -34,7 +34,7 @@ ___
 **Response 2:**
 ```javascript
 {
-	"code": 0,
+	"code": -1,
 	"message": "User already registered"
 }
 ```
