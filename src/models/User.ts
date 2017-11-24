@@ -18,7 +18,6 @@ export class User {
             this.mobile = _user.mobile;
             this.gender = _user.gender;
             this.password = _user.password;
-            
         }
     }
 }

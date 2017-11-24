@@ -1,8 +1,9 @@
 export class Constants {
     
-    static DB_COLLECTIONS = {
-        USER: 'user'
+    public static DB_COLLECTIONS = {
+        USER: 'user',
+        TOKEN: 'token'
     };
 
-    static PROJECT_SECRET_KEY = 'Hello_User_Profile_Project';
+    public static PROJECT_SECRET_KEY = 'Hello_User_Profile_Project';
 }

@@ -5,6 +5,8 @@ import {Db, UpdateWriteOpResult} from 'mongodb';
 import {User} from '../models/User';
 import {CryptoHelper} from '../helper/CryptoHelper';
 import {Utils} from '../helper/Utils';
+import { TokenController } from './TokenController';
+import { token } from 'morgan';
 
 export class UserController {
 
@@ -39,15 +41,33 @@ export class UserController {
             return;
         }
 
+        const generateToken = (_user: User) => {
+            const tokenController = new TokenController(this.db);
+            tokenController.generateToken(_user)
+            .then(_token => {
+                res.json({
+                    code: 0,
+                    message: 'Login successful',
+                    data: {
+                        token: _token,
+                        profile: {
+                            id: _user['_id'],
+                            firstName: _user.firstName,
+                            lastName: _user.lastName,
+                            email: _user.email,
+                            mobile: _user.mobile,
+                            gender: _user.gender
+                        }
+                    }
+                });
+            });
+        };
+
         const checkPassword = (_user: User) => {
             CryptoHelper.bycryptCompare(req.body.password, _user.password)
             .then(_resp => {
                 if (_resp) {
-                    res.json({
-                        code: 0,
-                        message: 'Login successful',
-                        data: null
-                    });
+                    generateToken(_user);
                 }
                 else {
                     res.json({
@@ -72,7 +92,7 @@ export class UserController {
                 return;
             }
             checkPassword(_dbResult);
-        });    
+        });
     }
 
     public register(req: Request, res: Response) {

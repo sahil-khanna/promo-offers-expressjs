@@ -5,21 +5,21 @@ export class CryptoHelper {
     private static crypto = require('crypto');
     private static algorithm = 'aes-256-ctr';
     
-    static encrypt(text: string) {
+    public static encrypt(text: string) {
         var cipher = this.crypto.createCipher(this.algorithm, Constants.PROJECT_SECRET_KEY)
         var crypted = cipher.update(text,'utf8', 'hex')
         crypted += cipher.final('hex');
         return crypted;
     }
 
-    static decrypt(text: string) {
+    public static decrypt(text: string) {
         var decipher = this.crypto.createDecipher(this.algorithm, Constants.PROJECT_SECRET_KEY)
         var dec = decipher.update(text,'hex', 'utf8')
         dec += decipher.final('utf8');
         return dec;
     }
 
-    static bycrypt(text: string) {
+    public static bycrypt(text: string) {
         var bcrypt = require('bcrypt');
         const saltRounds = 10;
         
@@ -31,7 +31,7 @@ export class CryptoHelper {
         });
     }
 
-    static bycryptCompare(text: string, hash: any) {
+    public static bycryptCompare(text: string, hash: any) {
         var bcrypt = require('bcrypt');
         
         return new Promise((resolve, reject) => {
