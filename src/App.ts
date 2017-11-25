@@ -53,6 +53,7 @@ class App {
 
     app.post(urlPrefix + 'login', new UserController(this.db).login);
     app.post(urlPrefix + 'register', new UserController(this.db).register);
+    app.put(urlPrefix + 'profile', new UserController(this.db).profile);
   }
 }
 
