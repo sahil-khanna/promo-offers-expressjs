@@ -9,6 +9,8 @@ export class User {
     gender: boolean;    // True = male, False = female
     mobile: string;
     password: string;
+    activationKey?: string;
+    isActivated?: boolean;
 
     constructor(_user) {
         if (_user) {
