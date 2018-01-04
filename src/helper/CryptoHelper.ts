@@ -3,20 +3,26 @@ import {Constants} from './Constants';
 export class CryptoHelper {
     
     private static crypto = require('crypto');
-    private static algorithm = 'aes-256-ctr';
     
     public static encrypt(text: string) {
-        var cipher = this.crypto.createCipher(this.algorithm, Constants.PROJECT_SECRET_KEY)
+        var cipher = this.crypto.createCipher('aes-256-ctr', Constants.PROJECT_SECRET_KEY)
         var crypted = cipher.update(text,'utf8', 'hex')
         crypted += cipher.final('hex');
         return crypted;
     }
 
     public static decrypt(text: string) {
-        var decipher = this.crypto.createDecipher(this.algorithm, Constants.PROJECT_SECRET_KEY)
+        var decipher = this.crypto.createDecipher('aes-256-ctr', Constants.PROJECT_SECRET_KEY)
         var dec = decipher.update(text,'hex', 'utf8')
         dec += decipher.final('utf8');
         return dec;
+    }
+
+    public static hash(text: string) {
+        return this.crypto
+        .createHash('sha256')
+        .update(text, 'utf8')
+        .digest('hex');
     }
 
     public static bycrypt(text: string) {

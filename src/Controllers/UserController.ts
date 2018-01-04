@@ -64,24 +64,25 @@ export class UserController {
             });
         };
 
-        const checkPassword = (_user: User) => {
-            CryptoHelper.bycryptCompare(req.body.password, _user.password)
-            .then(_resp => {
-                if (_resp) {
-                    generateToken(_user);
-                }
-                else {
-                    res.json({
-                        code: -1,
-                        message: 'Invalid username or password',
-                        data: null
-                    });
-                }                
-            });
-        };
+        // const checkPassword = (_user: User) => {
+        //     CryptoHelper.bycryptCompare(req.body.password, _user.password)
+        //     .then(_resp => {
+        //         if (_resp) {
+        //             generateToken(_user);
+        //         }
+        //         else {
+        //             res.json({
+        //                 code: -1,
+        //                 message: 'Invalid username or password',
+        //                 data: null
+        //             });
+        //         }                
+        //     });
+        // };
 
         this.db.collection(Constants.DB_COLLECTIONS.USER).findOne({
-            email: user.email
+            email: user.email,
+            password: CryptoHelper.hash(user.password)
         })
         .then(_dbResult => {
             if (!_dbResult) {
@@ -91,7 +92,10 @@ export class UserController {
                     data: null
                 });
             }
-            checkPassword(_dbResult);
+            else {
+                generateToken(_dbResult);
+            }
+            // checkPassword(_dbResult);
         });
     }
 
@@ -147,7 +151,7 @@ export class UserController {
                     res.json({
                         code: 0,
                         message: 'Account registered. Check your email for instructions to activate your account. The activation URL is also printed on console',
-                        data: 'http://localhost:4200/activate-account/' + encodeURIComponent(user.activationKey)
+                        data: 'http://localhost:4200/activate-account/' + user.activationKey
                     });
                 }
                 else {
@@ -159,63 +163,31 @@ export class UserController {
             });
         };
 
-        const encryptPassword = () => {
-            CryptoHelper.bycrypt(user.password)
-            .then(_passwordHash => {
-                user.password = _passwordHash.toString();
-                inesrtInDB();
-            });
-        };
-
-        const generateActivationKey = () => {
-            CryptoHelper.bycrypt(user.email)
-            .then(_emailHash => {
-                user.activationKey = _emailHash.toString();
-                user.isActivated = false;
-                encryptPassword();
-            });
-        };
-
-        generateActivationKey();
+        user.activationKey = CryptoHelper.hash(user.email);
+        user.isActivated = false;
+        user.password = CryptoHelper.hash(user.password);
+        inesrtInDB();
     }
 
     public activateAccount(req: Request, res: Response) {
         const params = req.params;
 
-        console.log(params[0].split('/'));
-        this.db.collection(Constants.DB_COLLECTIONS.USER).findOne({
-            activationKey: params.key,
-            // isActivated: false
-        })
-        .then((_user) => {
-            // console.log(_user);
-            if (!_user) {
+        this.db.collection(Constants.DB_COLLECTIONS.USER).findOneAndUpdate(
+            { activationKey: params[0].split('/')[1], isActivated: false },
+            { $set: {activationKey: null, isActivated: true} }
+        )
+        .then((_dbResult) => {
+            if (!_dbResult || !_dbResult.value) {
                 return res.json({
                     code: -1,
                     message: 'Invalid activation key'
                 });
             }
 
-            delete _user.activationKey;
-            _user.isActivated = true;
-
-            this.db.collection(Constants.DB_COLLECTIONS.USER).updateOne(
-                {id: _user['_id']},
-                {$set: _user}
-            )
-            .then(_dbResult => {
-                if (_dbResult) {
-                    return res.json({
-                        code: 0,
-                        message: 'Profile updated successfully',
-                        data: null
-                    });
-                }
-
-                return res.json({
-                    code: -1,
-                    message: 'Unable to process request'
-                });
+            return res.json({
+                code: 0,
+                message: 'Account activated successfully',
+                data: null
             });
         })
         .catch(() => {

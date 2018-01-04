@@ -22,14 +22,15 @@ class App {
 
   //TODO: Init route and middleware when DB finishes initializing
   private initDB() {
-    let mongoClient = new MongoClient().connect('mongodb://sahil.khanna:MyPassword@ds239217.mlab.com:39217/user-profile')
+    // let mongoClient = new MongoClient().connect('mongodb://sahil.khanna:MyPassword@ds239217.mlab.com:39217/user-profile')
+    let mongoClient = new MongoClient().connect('mongodb://sahil.khanna:MyPassword@ds135757.mlab.com:35757/user-profile-us')
     .then((_db) => {
       this.db = _db;
       this.middleware();
       this.routes();
     })
     .catch((_err) => {
-      console.log('***Error***' + _err);
+      console.log('***DB Error***' + _err);
     })
   }
 
