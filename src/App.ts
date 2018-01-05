@@ -56,6 +56,8 @@ class App {
     app.post(urlPrefix + 'register', new UserController(this.db).register);
     app.put(urlPrefix + 'profile', new UserController(this.db).profile);
     app.get(urlPrefix + 'activate-account/*', new UserController(this.db).activateAccount);
+    app.get(urlPrefix + 'forgot-password/*', new UserController(this.db).forgotPassword);
+    app.put(urlPrefix + 'reset-password', new UserController(this.db).resetPassword);
   }
 }
 

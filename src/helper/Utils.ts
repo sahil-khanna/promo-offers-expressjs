@@ -25,4 +25,22 @@ export class Utils {
     public static atob(text: string) {
         return Buffer.from(text, 'base64').toString('ascii');
     }
+
+    public static deparam(param: string) {
+        if (!param || param.length === 0) {
+            return {};
+        }
+        
+        const split = param.split('/');
+        if (split.length % 2 !== 0) {
+            return {};
+        }
+
+        const result = {};
+        for (let i = 0; i < split.length; i++) {
+            result[split[i]] = split[++i];
+        }
+
+        return result;
+    }
 }

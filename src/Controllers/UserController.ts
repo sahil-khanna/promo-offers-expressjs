@@ -19,6 +19,8 @@ export class UserController {
         this.register = this.register.bind(this);
         this.profile = this.profile.bind(this);
         this.activateAccount = this.activateAccount.bind(this);
+        this.forgotPassword = this.forgotPassword.bind(this);
+        this.resetPassword = this.resetPassword.bind(this);
     }
 
     public login(req: Request, res: Response) {
@@ -72,15 +74,13 @@ export class UserController {
             if (!_dbResult) {
                 return res.json({
                     code: -1,
-                    message: 'Invalid username or password',
-                    data: null
+                    message: 'Invalid username or password'
                 });
             }
             else if (!_dbResult.isActivated) {
                 return res.json({
                     code: -1,
-                    message: 'Account not activated. Check your email for instructions to activate your account',
-                    data: null
+                    message: 'Account not activated. Check your email for instructions to activate your account'
                 });
             }
             else {
@@ -127,7 +127,7 @@ export class UserController {
             });
         }
 
-        user.activationKey = CryptoHelper.hash(user.email);
+        user.activationKey = CryptoHelper.hash(user.email + Date.now());    // To make the activation key unique
         user.isActivated = false;
         user.password = CryptoHelper.hash(user.password);
 
@@ -153,11 +153,107 @@ export class UserController {
         });
     }
 
-    public activateAccount(req: Request, res: Response) {
-        const params = req.params;
+    public forgotPassword(req: Request, res: Response) {
+        const params:any = Utils.deparam(req.params[0]);
+
+        if (!Validations.isEmailValid(params.email)) {
+            return res.json({
+                code: -1,
+                message: 'Email is not valid'
+            });
+        }
+
+        const passwordKey = CryptoHelper.hash(params.email + Date.now());    // To make the password key unique
 
         this.db.collection(Constants.DB_COLLECTIONS.USER).findOneAndUpdate(
-            { activationKey: params[0].split('/')[1], isActivated: false },
+            { email: params.email, isActivated: true },
+            { $set: {passwordKey: passwordKey} }
+        )
+        .then((_dbResult: any) => {
+            if (!_dbResult || !_dbResult.value) {
+                return res.json({
+                    code: -1,
+                    message: 'Email is not registered or account is not activated'
+                });
+            }
+            
+            return res.json({
+                code: 0,
+                message: 'Check your email for instructions to reset your password. The reset password URL is also printed on console',
+                data: 'http://localhost:4200/reset-password?passwordKey=' + passwordKey + '&email=' + params.email
+            });
+        })
+        .catch((err) => {
+            return res.json({
+                code: -1,
+                message: 'Unable to process request'
+            });
+        });
+    }
+
+    // TODO: Accept token if already logged in user resets password
+    public resetPassword(req: Request, res: Response) {
+        const body = req.body;
+
+        console.log(body);
+
+        const criteria: any = { isActivated: true };
+        if (!body.password) {
+            return res.json({
+                code: -1,
+                message: 'Invalid parameters'
+            });
+        }
+        else if (body.passwordKey) {
+            criteria.passwordKey = body.passwordKey
+        }
+        else if (body.email) {
+            criteria.email = body.email
+        }
+        else {
+            return res.json({
+                code: -1,
+                message: 'Invalid parameters'
+            });
+        }
+
+        this.db.collection(Constants.DB_COLLECTIONS.USER).findOneAndUpdate(
+            criteria,
+            { $set: {password: CryptoHelper.hash(body.password), passwordKey: null} }
+        )
+        .then((_dbResult: any) => {
+            if (!_dbResult || !_dbResult.value) {
+                return res.json({
+                    code: -1,
+                    message: 'Invalid parameters'
+                });
+            }
+            
+            return res.json({
+                code: 0,
+                message: 'Password reset'
+            });
+        })
+        .catch((err) => {
+            return res.json({
+                code: -1,
+                message: 'Unable to process request'
+            });
+        });
+    }
+
+    public activateAccount(req: Request, res: Response) {
+        const params:any = Utils.deparam(req.params[0]);
+
+        if (!params.key) {
+            return res.json({
+                code: -1,
+                message: 'Invalid activation key'
+            });
+        }
+
+        this.db.collection(Constants.DB_COLLECTIONS.USER).findOneAndUpdate(
+            { activationKey: params.key, isActivated: false },
             { $set: {isActivated: true} }
         )
         .then((_dbResult) => {
@@ -170,8 +266,7 @@ export class UserController {
 
             return res.json({
                 code: 0,
-                message: 'Account activated successfully',
-                data: null
+                message: 'Account activated successfully'
             });
         })
         .catch(() => {
@@ -182,6 +277,7 @@ export class UserController {
         });
     }
 
+    // TODO: Remove password. Password will be reset in different method
     public profile(req: Request, res: Response) {
         let token = req.headers['up-token'];
         let newToken;
@@ -234,8 +330,7 @@ export class UserController {
 
                     return res.json({
                         code: 0,
-                        message: 'Profile updated successfully',
-                        data: null
+                        message: 'Profile updated successfully'
                     });
                 }
             });
