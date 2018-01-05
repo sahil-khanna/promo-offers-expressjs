@@ -64,25 +64,9 @@ export class UserController {
             });
         };
 
-        // const checkPassword = (_user: User) => {
-        //     CryptoHelper.bycryptCompare(req.body.password, _user.password)
-        //     .then(_resp => {
-        //         if (_resp) {
-        //             generateToken(_user);
-        //         }
-        //         else {
-        //             res.json({
-        //                 code: -1,
-        //                 message: 'Invalid username or password',
-        //                 data: null
-        //             });
-        //         }                
-        //     });
-        // };
-
         this.db.collection(Constants.DB_COLLECTIONS.USER).findOne({
             email: user.email,
-            password: CryptoHelper.hash(user.password)
+            password: CryptoHelper.hash(user.password),
         })
         .then(_dbResult => {
             if (!_dbResult) {
@@ -92,10 +76,16 @@ export class UserController {
                     data: null
                 });
             }
+            else if (!_dbResult.isActivated) {
+                return res.json({
+                    code: -1,
+                    message: 'Account not activated. Check your email for instructions to activate your account',
+                    data: null
+                });
+            }
             else {
                 generateToken(_dbResult);
             }
-            // checkPassword(_dbResult);
         });
     }
 
@@ -137,36 +127,30 @@ export class UserController {
             });
         }
 
-        // Insert into DB is not already inserted
-        const inesrtInDB = () => {
-            this.db.collection(Constants.DB_COLLECTIONS.USER).updateOne({
-                email: user.email
-            }, {
-                $setOnInsert: user,
-            }, {
-                upsert: true
-            })
-            .then(_dbResult => {
-                if ('upserted' in _dbResult.result) {
-                    res.json({
-                        code: 0,
-                        message: 'Account registered. Check your email for instructions to activate your account. The activation URL is also printed on console',
-                        data: 'http://localhost:4200/activate-account/' + user.activationKey
-                    });
-                }
-                else {
-                    res.json({
-                        code: -1,
-                        message: 'Email already registered. Try entering a different email'
-                    });
-                }
-            });
-        };
-
         user.activationKey = CryptoHelper.hash(user.email);
         user.isActivated = false;
         user.password = CryptoHelper.hash(user.password);
-        inesrtInDB();
+
+        // Insert into DB if not already inserted
+        this.db.collection(Constants.DB_COLLECTIONS.USER).updateOne(
+            { email: user.email },
+            { $setOnInsert: user},
+            { upsert: true }
+        )
+        .then(_dbResult => {
+            if ('upserted' in _dbResult.result) {
+                res.json({
+                    code: 0,
+                    message: 'Account registered. Check your email for instructions to activate your account. The activation URL is also printed on console',
+                    data: 'http://localhost:4200/activate-account/' + user.activationKey
+                });
+            } else {
+                res.json({
+                    code: -1,
+                    message: 'Email already registered. Try entering a different email'
+                });
+            }
+        });
     }
 
     public activateAccount(req: Request, res: Response) {
@@ -174,7 +158,7 @@ export class UserController {
 
         this.db.collection(Constants.DB_COLLECTIONS.USER).findOneAndUpdate(
             { activationKey: params[0].split('/')[1], isActivated: false },
-            { $set: {activationKey: null, isActivated: true} }
+            { $set: {isActivated: true} }
         )
         .then((_dbResult) => {
             if (!_dbResult || !_dbResult.value) {
