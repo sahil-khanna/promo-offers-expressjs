@@ -1,4 +1,4 @@
-import {Utils} from '../helper/Utils';
+import { Utils } from '../helper/Utils';
 
 //TODO: Add dob, created and modified dates as well
 

@@ -26,7 +26,7 @@ export class TokenController {
 
         return new Promise((resolve, reject) => {
             this.db.collection(Constants.DB_COLLECTIONS.TOKEN).insertOne(
-                {userId: _user['_id'], token: token}
+                {userId: _user['_id'], token: token, status: true}
             )
             .then(() => {
                 resolve(token);

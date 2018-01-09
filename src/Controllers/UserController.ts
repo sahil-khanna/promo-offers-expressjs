@@ -1,12 +1,11 @@
-import {Router, Request, Response} from 'express';
-import {Validations} from '../helper/Validations';
-import {Constants} from '../helper/Constants';
-import {Db, UpdateWriteOpResult} from 'mongodb';
-import {User} from '../models/User';
-import {CryptoHelper} from '../helper/CryptoHelper';
-import {Utils} from '../helper/Utils';
-import {TokenController} from './TokenController';
-import {token} from 'morgan';
+import { Router, Request, Response } from 'express';
+import { Validations } from '../helper/Validations';
+import { Constants } from '../helper/Constants';
+import { Db, UpdateWriteOpResult } from 'mongodb';
+import { User } from '../models/User';
+import { CryptoHelper } from '../helper/CryptoHelper';
+import { Utils } from '../helper/Utils';
+import { TokenController } from './TokenController';
 
 export class UserController {
 
@@ -21,6 +20,7 @@ export class UserController {
         this.activateAccount = this.activateAccount.bind(this);
         this.forgotPassword = this.forgotPassword.bind(this);
         this.resetPassword = this.resetPassword.bind(this);
+        this.logout = this.logout.bind(this);
     }
 
     public login(req: Request, res: Response) {
@@ -85,6 +85,36 @@ export class UserController {
             }
             else {
                 generateToken(_dbResult);
+            }
+        });
+    }
+
+    public logout(req: Request, res: Response) {
+        const token = req.get('up-token');
+
+        if (!token) {
+            return res.json({
+                code: -1,
+                message: 'Invalid token'
+            });
+        }
+        
+        this.db.collection(Constants.DB_COLLECTIONS.TOKEN).updateOne(
+            { token: token, status: true },
+            { $set: {status: false} }
+        )
+        .then(_dbResult => {
+            if (!_dbResult) {
+                return res.json({
+                    code: -1,
+                    message: 'Invalid token'
+                });
+            }
+            else {
+                return res.json({
+                    code: 0,
+                    message: 'Logged out'
+                });
             }
         });
     }
@@ -309,9 +339,6 @@ export class UserController {
         else if ('gender' in user && !Validations.isGenderValid(user.gender)) {
             errorMessage = 'Gender is not valid';
         }
-        else if ('password' in user && Utils.nullToObject(user.password, '').length === 0) {
-            errorMessage = 'Password is not valid';
-        }
 
         if (errorMessage) {
             return res.json({
@@ -323,7 +350,7 @@ export class UserController {
         const updateProfile = () => {
             this.db.collection(Constants.DB_COLLECTIONS.USER).updateOne(
                 {email: user.email},
-                {$set: user}
+                {$set: {firstName: user.firstName, lastName: user.lastName, mobile: user.mobile, gender: user.gender}}
             )
             .then(_dbResult => {
                 if (_dbResult) {

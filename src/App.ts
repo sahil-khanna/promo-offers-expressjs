@@ -58,6 +58,7 @@ class App {
     app.get(urlPrefix + 'activate-account/*', new UserController(this.db).activateAccount);
     app.get(urlPrefix + 'forgot-password/*', new UserController(this.db).forgotPassword);
     app.put(urlPrefix + 'reset-password', new UserController(this.db).resetPassword);
+    app.get(urlPrefix + 'logout', new UserController(this.db).logout);
   }
 }
 
