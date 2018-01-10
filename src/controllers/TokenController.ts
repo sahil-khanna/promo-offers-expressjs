@@ -1,8 +1,9 @@
-import {Db, UpdateWriteOpResult} from 'mongodb';
-import {Constants} from '../helper/Constants';
-import {User} from '../models/User';
-import {Token} from '../models/Token';
-import {Utils} from '../helper/Utils';
+import { Db, UpdateWriteOpResult } from 'mongodb';
+import { Constants } from '../helper/Constants';
+import { User } from '../models/User';
+import { Token } from '../models/Token';
+import { Utils } from '../helper/Utils';
+import { Response } from 'express';
 
 export class TokenController {
 
@@ -40,39 +41,34 @@ export class TokenController {
     /*
      *  Validate token, and if valid - update in DB
      */
-    public isTokenValid(token: string) {
+    public isTokenValid(oldToken: string, res: Response) {
         return new Promise((resolve, reject) => {
-            let split = Utils.atob(token).split('~');
+            if (oldToken === null) {
+                return resolve(null);
+            }
 
-            const refreshToken = (token: Token) => {
-                let newToken = this.newToken({email: split[0], _id: split[1]});
-                this.db.collection(Constants.DB_COLLECTIONS.TOKEN).updateOne(
-                    {token: token.token},
-                    {$set: {token: newToken}}
-                )
-                .then(_token => {
-                    resolve(newToken);
-                })
-                .catch(() => {
-                    resolve(null);
-                });
-            };
-        
+            let split = Utils.atob(oldToken).split('~');
             if (split.length !== 3) {
                 return resolve(null);
-            }
-
-            if (Number(split[2]) < Date.now()) {
+            } else if (Number(split[2]) < Date.now()) {
                 return resolve(null);
             }
 
-            this.db.collection(Constants.DB_COLLECTIONS.TOKEN).findOne({token: token})
-            .then((_token: Token) => {
-                if (!_token) {
+            let newToken = this.newToken({email: split[0], _id: split[1]});
+            this.db.collection(Constants.DB_COLLECTIONS.TOKEN).findOneAndUpdate(
+                {token: oldToken, status: true},
+                {$set: {token: newToken}}
+            )
+            .then((_dbResult) => {
+                if (!_dbResult) {
                     return resolve(null);
                 }
 
-                refreshToken(_token);
+                // Send this new token in response header
+                res.setHeader('access-control-expose-headers', Constants.TOKEN_HEADER_KEY);
+                res.setHeader(Constants.TOKEN_HEADER_KEY, newToken);
+
+                resolve(res);
             })
             .catch(() => {
                 resolve(null);

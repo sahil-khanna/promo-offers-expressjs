@@ -31,10 +31,10 @@ export class UserController {
 
         let errorMessage;
         if (!Validations.isEmailValid(user.email)) {
-            errorMessage = 'Email is not valid';
+            errorMessage = Constants.RESPONSE_INVALID_EMAIL;
         }
         else if (Utils.nullToObject(user.password, '').length === 0) {
-            errorMessage = 'Password is not valid';
+            errorMessage = Constants.RESPONSE_INVALID_PASSWORD;
         }
 
         if (errorMessage) {
@@ -50,7 +50,6 @@ export class UserController {
             .then(_token => {
                 res.json({
                     code: 0,
-                    message: 'Login successful',
                     data: {
                         token: _token,
                         profile: {
@@ -74,13 +73,13 @@ export class UserController {
             if (!_dbResult) {
                 return res.json({
                     code: -1,
-                    message: 'Invalid username or password'
+                    message: Constants.RESPONSE_INVALID_USERNAME_OR_PASSWORD
                 });
             }
             else if (!_dbResult.isActivated) {
                 return res.json({
                     code: -1,
-                    message: 'Account not activated. Check your email for instructions to activate your account'
+                    message: Constants.RESPONSE_ACCOUNT_NOT_ACTIVATED
                 });
             }
             else {
@@ -90,12 +89,12 @@ export class UserController {
     }
 
     public logout(req: Request, res: Response) {
-        const token = req.get('up-token');
+        const token = req.headers[Constants.TOKEN_HEADER_KEY];
 
         if (!token) {
             return res.json({
                 code: -1,
-                message: 'Invalid token'
+                message: Constants.RESPONSE_INVALID_TOKEN
             });
         }
         
@@ -107,13 +106,13 @@ export class UserController {
             if (!_dbResult) {
                 return res.json({
                     code: -1,
-                    message: 'Invalid token'
+                    message: Constants.RESPONSE_INVALID_TOKEN
                 });
             }
             else {
                 return res.json({
                     code: 0,
-                    message: 'Logged out'
+                    message: Constants.RESPONSE_LOGGED_OUT
                 });
             }
         });
@@ -189,7 +188,7 @@ export class UserController {
         if (!Validations.isEmailValid(params.email)) {
             return res.json({
                 code: -1,
-                message: 'Email is not valid'
+                message: Constants.RESPONSE_INVALID_EMAIL
             });
         }
 
@@ -203,35 +202,32 @@ export class UserController {
             if (!_dbResult || !_dbResult.value) {
                 return res.json({
                     code: -1,
-                    message: 'Email is not registered or account is not activated'
+                    message: Constants.RESPONSE_INVALID_EMAIL_OR_ACCOUNT_NOT_ACTIVATED
                 });
             }
             
             return res.json({
                 code: 0,
-                message: 'Check your email for instructions to reset your password. The reset password URL is also printed on console',
+                message: Constants.RESPONSE_FORGOT_PASSWORD_EMAIL,
                 data: 'http://localhost:4200/reset-password?passwordKey=' + passwordKey + '&email=' + params.email
             });
         })
         .catch((err) => {
             return res.json({
                 code: -1,
-                message: 'Unable to process request'
+                message: Constants.RESPONSE_UNABLE_TO_PROCESS
             });
         });
     }
 
-    // TODO: Accept token if already logged in user resets password
     public resetPassword(req: Request, res: Response) {
         const body = req.body;
-
-        console.log(body);
 
         const criteria: any = { isActivated: true };
         if (!body.password) {
             return res.json({
                 code: -1,
-                message: 'Invalid parameters'
+                message: Constants.RESPONSE_INVALID_PARAMETERS
             });
         }
         else if (body.passwordKey) {
@@ -243,7 +239,7 @@ export class UserController {
         else {
             return res.json({
                 code: -1,
-                message: 'Invalid parameters'
+                message: Constants.RESPONSE_INVALID_PARAMETERS
             });
         }
 
@@ -255,19 +251,19 @@ export class UserController {
             if (!_dbResult || !_dbResult.value) {
                 return res.json({
                     code: -1,
-                    message: 'Invalid parameters'
+                    message: Constants.RESPONSE_INVALID_PARAMETERS
                 });
             }
             
             return res.json({
                 code: 0,
-                message: 'Password reset'
+                message: Constants.RESPONSE_PASSWORD_RESET
             });
         })
         .catch((err) => {
             return res.json({
                 code: -1,
-                message: 'Unable to process request'
+                message: Constants.RESPONSE_UNABLE_TO_PROCESS
             });
         });
     }
@@ -278,7 +274,7 @@ export class UserController {
         if (!params.key) {
             return res.json({
                 code: -1,
-                message: 'Invalid activation key'
+                message: Constants.RESPONSE_INVALID_ACTIVATION_KEY
             });
         }
 
@@ -290,31 +286,30 @@ export class UserController {
             if (!_dbResult || !_dbResult.value) {
                 return res.json({
                     code: -1,
-                    message: 'Invalid activation key'
+                    message: Constants.RESPONSE_INVALID_ACTIVATION_KEY
                 });
             }
 
             return res.json({
                 code: 0,
-                message: 'Account activated successfully'
+                message: Constants.RESPONSE_ACCOUNT_ACTIVATED
             });
         })
         .catch(() => {
             return res.json({
                 code: -1,
-                message: 'Unable to process request'
+                message: Constants.RESPONSE_UNABLE_TO_PROCESS
             });
         });
     }
 
-    // TODO: Remove password. Password will be reset in different method
     public profile(req: Request, res: Response) {
-        let token = req.headers['up-token'];
-        let newToken;
+        const token = req.headers[Constants.TOKEN_HEADER_KEY];
+        
         if (!token) {
             return res.json({
                 code: -1,
-                message: 'Invalid token'
+                message: Constants.RESPONSE_INVALID_TOKEN
             });
         }
 
@@ -322,22 +317,22 @@ export class UserController {
         let user = req.body;
 
         if (!token) {
-            errorMessage = 'Invalid token';
+            errorMessage = Constants.RESPONSE_INVALID_TOKEN;
         }
         else if (!Validations.isEmailValid(user.email)) {
-            errorMessage = 'Email is not valid';
+            errorMessage = Constants.RESPONSE_INVALID_EMAIL;
         }
         else if ('mobile' in user && !Validations.isMobileValid(user.mobile)) {
-            errorMessage = 'Mobile is not valid';
+            errorMessage = Constants.RESPONSE_INVALID_MOBILE;
         }
         else if ('firstName' in user && !Validations.isNameValid(user.firstName)) {
-            errorMessage = 'First name is not valid';
+            errorMessage = Constants.RESPONSE_INVALID_FIRST_NAME;
         }
         else if ('lastName' in user && !Validations.isNameValid(user.lastName)) {
-            errorMessage = 'Last name is not valid';
+            errorMessage = Constants.RESPONSE_INVALID_LAST_NAME;
         }
         else if ('gender' in user && !Validations.isGenderValid(user.gender)) {
-            errorMessage = 'Gender is not valid';
+            errorMessage = Constants.RESPONSE_INVALID_GENDER;
         }
 
         if (errorMessage) {
@@ -354,41 +349,45 @@ export class UserController {
             )
             .then(_dbResult => {
                 if (_dbResult) {
-
                     return res.json({
                         code: 0,
-                        message: 'Profile updated successfully'
-                    });
-                }
-            });
-        };
-
-        const validateToken = () => {
-            let tokenController = new TokenController(this.db);
-            tokenController.isTokenValid(token.toString())
-            .then(_token => {
-                if (!_token) {
-                    return res.json({
-                        code: -1,
-                        message: 'Invalid token'
+                        message: Constants.RESPONSE_PROFILE_UPDATED
                     });
                 }
                 else {
-                    res.setHeader('up-token', _token.toString());   // Send this new token in response header
-                    updateProfile();
+                    return res.json({
+                        code: -1,
+                        message: Constants.RESPONSE_UNABLE_TO_PROCESS
+                    });
                 }
-            });
+            })
+            .catch(() => {
+                return res.json({
+                    code: -1,
+                    message: Constants.RESPONSE_UNABLE_TO_PROCESS
+                });
+            });;
         };
 
-        if ('password' in user) {
-            CryptoHelper.bycrypt(user.password)
-            .then(_hash => {
-                user.password = _hash.toString();
-                validateToken();
+        let tokenController = new TokenController(this.db);
+        tokenController.isTokenValid(token.toString(), res)
+        .then((_tokenResponse: Response) => {
+            if (!_tokenResponse) {
+                return res.json({
+                    code: -1,
+                    message: Constants.RESPONSE_INVALID_TOKEN
+                });
+            }
+            else {
+                res = _tokenResponse;
+                updateProfile();
+            }
+        })
+        .catch(() => {
+            return res.json({
+                code: -1,
+                message: Constants.RESPONSE_INVALID_TOKEN
             });
-        }
-        else {
-            validateToken();
-        }
+        });
     }
 }
