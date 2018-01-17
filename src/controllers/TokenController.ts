@@ -5,6 +5,11 @@ import { Token } from '../models/Token';
 import { Utils } from '../helper/Utils';
 import { Response } from 'express';
 
+export interface TokenValidationResponse {
+    response: Response;
+    userId: string;
+}
+
 export class TokenController {
 
     private db: Db;
@@ -68,7 +73,7 @@ export class TokenController {
                 res.setHeader('access-control-expose-headers', Constants.TOKEN_HEADER_KEY);
                 res.setHeader(Constants.TOKEN_HEADER_KEY, newToken);
 
-                resolve(res);
+                resolve({response: res, userId: _dbResult.value.userId.toString()});
             })
             .catch(() => {
                 resolve(null);

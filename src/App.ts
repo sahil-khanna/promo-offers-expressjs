@@ -3,8 +3,9 @@ import * as express from 'express';
 import * as logger from 'morgan';
 import * as bodyParser from 'body-parser';
 import * as mongodb from 'mongodb';
-import {MongoClient, Db} from 'mongodb';
-import {UserController} from './controllers/UserController';
+import { MongoClient, Db } from 'mongodb';
+import { UserController } from './controllers/UserController';
+import { ContributionController } from './controllers/ContributionController';
 
 
 // Creates and configures an ExpressJS web server.
@@ -59,6 +60,8 @@ class App {
     app.get(urlPrefix + 'forgot-password/*', new UserController(this.db).forgotPassword);
     app.put(urlPrefix + 'reset-password', new UserController(this.db).resetPassword);
     app.get(urlPrefix + 'logout', new UserController(this.db).logout);
+    app.post(urlPrefix + 'contribute', new ContributionController(this.db).add);
+    app.get(urlPrefix + 'contributions', new ContributionController(this.db).get);
   }
 }
 

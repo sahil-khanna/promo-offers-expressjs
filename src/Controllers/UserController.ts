@@ -5,7 +5,7 @@ import { Db, UpdateWriteOpResult } from 'mongodb';
 import { User } from '../models/User';
 import { CryptoHelper } from '../helper/CryptoHelper';
 import { Utils } from '../helper/Utils';
-import { TokenController } from './TokenController';
+import { TokenController, TokenValidationResponse } from './TokenController';
 
 export class UserController {
 
@@ -316,10 +316,7 @@ export class UserController {
         let errorMessage = null;
         let user = req.body;
 
-        if (!token) {
-            errorMessage = Constants.RESPONSE_INVALID_TOKEN;
-        }
-        else if (!Validations.isEmailValid(user.email)) {
+        if (!Validations.isEmailValid(user.email)) {
             errorMessage = Constants.RESPONSE_INVALID_EMAIL;
         }
         else if ('mobile' in user && !Validations.isMobileValid(user.mobile)) {
@@ -371,7 +368,7 @@ export class UserController {
 
         let tokenController = new TokenController(this.db);
         tokenController.isTokenValid(token.toString(), res)
-        .then((_tokenResponse: Response) => {
+        .then((_tokenResponse: TokenValidationResponse) => {
             if (!_tokenResponse) {
                 return res.json({
                     code: -1,
@@ -379,7 +376,7 @@ export class UserController {
                 });
             }
             else {
-                res = _tokenResponse;
+                res = _tokenResponse.response;
                 updateProfile();
             }
         })

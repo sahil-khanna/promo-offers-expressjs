@@ -2,7 +2,8 @@ export class Constants {
     
     public static DB_COLLECTIONS = {
         USER: 'user',
-        TOKEN: 'token'
+        TOKEN: 'token',
+        CONTRIBUTION: 'contribution'
     };
 
     public static PROJECT_SECRET_KEY = 'Hello_User_Profile_Project';
@@ -23,8 +24,14 @@ export class Constants {
     public static RESPONSE_INVALID_ACTIVATION_KEY = 'Invalid activation key';
     public static RESPONSE_ACCOUNT_ACTIVATED = 'Account activated successfully';
     public static RESPONSE_PROFILE_UPDATED = 'Profile updated sucessfully';
+    public static RESPONSE_CONTRIBUTION_ADDED = 'Thank you for your contribution';
     public static RESPONSE_INVALID_MOBILE = 'Mobile is not valid';
     public static RESPONSE_INVALID_GENDER = 'Gender is not valid';
     public static RESPONSE_INVALID_FIRST_NAME = 'First name is not valid';
     public static RESPONSE_INVALID_LAST_NAME = 'Last name is not valid';
+    public static RESPONSE_INVALID_CONTRIBUTION_TYPE = 'Type is not valid';
+    public static RESPONSE_INVALID_CONTRIBUTION_COOKED_ON = 'Cooked On is not valid';
+    public static RESPONSE_INVALID_CONTRIBUTION_CAN_SERVE = 'Can Serve is not valid';
+    public static RESPONSE_INVALID_CONTRIBUTION_IS_PACKED = 'Is Packed is not valid';
+    public static RESPONSE_INVALID_ADDRESS = 'Address is not valid';
 }
