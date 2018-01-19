@@ -1,3 +1,4 @@
+import { Router, Request, Response } from 'express';
 import * as path from 'path';
 import * as express from 'express';
 import * as logger from 'morgan';
@@ -6,6 +7,7 @@ import * as mongodb from 'mongodb';
 import { MongoClient, Db } from 'mongodb';
 import { UserController } from './controllers/UserController';
 import { ContributionController } from './controllers/ContributionController';
+import { Constants } from './helper/Constants';
 
 
 // Creates and configures an ExpressJS web server.
@@ -38,16 +40,12 @@ class App {
   // Configure Express middleware.
   private middleware(): void {
     this.express.use(logger('dev'));
-    this.express.use(bodyParser.json());
+    this.express.use(bodyParser.json({limit: '50mb'}));
     this.express.use(bodyParser.urlencoded({ extended: false }));
   }
 
   // Configure API endpoints.
   private routes(): void {
-    /* This is just to get up and running, and to make sure what we've got is
-     * working so far. This function will change when we start to add more
-     * API endpoints */
-
     let router = express.Router();
     let urlPrefix: String = '/api/1.0/';
     let app = this.express;
@@ -62,6 +60,12 @@ class App {
     app.get(urlPrefix + 'logout', new UserController(this.db).logout);
     app.post(urlPrefix + 'contribute', new ContributionController(this.db).add);
     app.get(urlPrefix + 'contributions', new ContributionController(this.db).get);
+
+    app.get('/resources/uploads/*', function(req: Request, res: Response) {
+      const split = __dirname.split('/');
+      delete split[split.length - 1];
+      res.sendFile(split.join('/') + Constants.FILE_UPLOAD_PATH + req.params['0']);
+    });
   }
 }
 

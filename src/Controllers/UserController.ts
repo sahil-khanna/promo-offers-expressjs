@@ -48,18 +48,24 @@ export class UserController {
             const tokenController = new TokenController(this.db);
             tokenController.generateToken(_user)
             .then(_token => {
+                const userProfile: any = {
+                    id: _user['_id'],
+                    firstName: _user.firstName,
+                    lastName: _user.lastName,
+                    email: _user.email,
+                    mobile: _user.mobile,
+                    gender: _user.gender
+                };
+
+                if (_user.imagePath) {
+                    userProfile.imageURL = Constants.SELF_URL + '/' + _user.imagePath;
+                }
+
                 res.json({
                     code: 0,
                     data: {
                         token: _token,
-                        profile: {
-                            id: _user['_id'],
-                            firstName: _user.firstName,
-                            lastName: _user.lastName,
-                            email: _user.email,
-                            mobile: _user.mobile,
-                            gender: _user.gender
-                        }
+                        profile: userProfile
                     }
                 });
             });
@@ -340,15 +346,39 @@ export class UserController {
         }
 
         const updateProfile = () => {
-            this.db.collection(Constants.DB_COLLECTIONS.USER).updateOne(
+            const toBeUpdated: any = {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                mobile: user.mobile,
+                gender: user.gender
+            };
+            if (user.image) {
+                toBeUpdated.imagePath = user.image;
+            }
+
+            this.db.collection(Constants.DB_COLLECTIONS.USER).findOneAndUpdate(
                 {email: user.email},
-                {$set: {firstName: user.firstName, lastName: user.lastName, mobile: user.mobile, gender: user.gender}}
+                {$set: toBeUpdated}
             )
-            .then(_dbResult => {
+            .then((_dbResult: any) => {
                 if (_dbResult) {
+                    const _updatedUser = _dbResult.value;
+                    const updatedProfile: any = {
+                        id: _updatedUser['_id'],
+                        firstName: _updatedUser.firstName,
+                        lastName: _updatedUser.lastName,
+                        email: _updatedUser.email,
+                        mobile: _updatedUser.mobile,
+                        gender: _updatedUser.gender
+                    };
+
+                    if (_updatedUser.imagePath) {
+                        updatedProfile.imageURL = Constants.SELF_URL + '/' + _updatedUser.imagePath
+                    }
                     return res.json({
                         code: 0,
-                        message: Constants.RESPONSE_PROFILE_UPDATED
+                        message: Constants.RESPONSE_PROFILE_UPDATED,
+                        data: updatedProfile
                     });
                 }
                 else {
@@ -366,6 +396,27 @@ export class UserController {
             });;
         };
 
+        const saveImage = () => {
+            if (user.image) {
+                var base64Data = user.image.replace(/^data:image\/png;base64,/, "");
+                const fileName = Date.now() + '.png';
+
+                require('fs').writeFile(Constants.FILE_UPLOAD_PATH + fileName, base64Data, 'base64', function(err) {
+                    if (err) {
+                        user.image = null;
+                    }
+                    else {
+                        user.image = Constants.FILE_UPLOAD_PATH + fileName;
+                    }
+
+                    updateProfile();
+                });
+            }
+            else {
+                updateProfile();
+            }
+        }
+
         let tokenController = new TokenController(this.db);
         tokenController.isTokenValid(token.toString(), res)
         .then((_tokenResponse: TokenValidationResponse) => {
@@ -377,7 +428,7 @@ export class UserController {
             }
             else {
                 res = _tokenResponse.response;
-                updateProfile();
+                saveImage();
             }
         })
         .catch(() => {

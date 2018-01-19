@@ -11,6 +11,7 @@ export class User {
     password: string;
     activationKey?: string;
     isActivated?: boolean;
+    imagePath?: string;
 
     constructor(_user) {
         if (_user) {

@@ -10,13 +10,17 @@ export class Constants {
 
     public static TOKEN_HEADER_KEY = 'x-token';
 
+    public static FILE_UPLOAD_PATH = 'resources/uploads/';
+
+    public static SELF_URL = 'http://localhost:3000';
+
     public static RESPONSE_LOGGED_OUT = 'Logged out';
     public static RESPONSE_INVALID_TOKEN = 'Invalid token';
     public static RESPONSE_INVALID_EMAIL = 'Email is not valid';
     public static RESPONSE_INVALID_PASSWORD = 'Password is not valid';
     public static RESPONSE_INVALID_USERNAME_OR_PASSWORD = 'Invalid username or password';
-    public static RESPONSE_ACCOUNT_NOT_ACTIVATED: 'Account not activated. Check your email for instructions to activate your account';
-    public static RESPONSE_INVALID_EMAIL_OR_ACCOUNT_NOT_ACTIVATED: 'Email is not registered or account is not activated';
+    public static RESPONSE_ACCOUNT_NOT_ACTIVATED = 'Account not activated. Check your email for instructions to activate your account';
+    public static RESPONSE_INVALID_EMAIL_OR_ACCOUNT_NOT_ACTIVATED = 'Email is not registered or account is not activated';
     public static RESPONSE_FORGOT_PASSWORD_EMAIL = 'Check your email for instructions to reset your password. The reset password URL is also printed on console';
     public static RESPONSE_UNABLE_TO_PROCESS = 'Unable to process request';
     public static RESPONSE_INVALID_PARAMETERS = 'Invalid parameters';
