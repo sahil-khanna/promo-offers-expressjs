@@ -38,10 +38,8 @@ class App {
 
 	// Configure API endpoints.
 	private routes(): void {
-		let router = express.Router();
-		let urlPrefix: String = '/api/1.0/';
-		let app = this.express;
-		// placeholder route handler
+		const urlPrefix: String = '/api/1.0/';
+		const app = this.express;
 
 		app.post(urlPrefix + 'login', new UserController().login);
 		app.post(urlPrefix + 'register', new UserController().register);

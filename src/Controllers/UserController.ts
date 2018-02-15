@@ -2,7 +2,8 @@ import { Router, Request, Response } from 'express';
 import { Validations } from '../helper/Validations';
 import { Constants } from '../helper/Constants';
 import { UpdateWriteOpResult } from 'mongodb';
-import { User } from '../models/User';
+// import { User } from '../models/User';
+import { IUser } from '../models/IUser';
 import { CryptoHelper } from '../helper/CryptoHelper';
 import { Utils } from '../helper/Utils';
 import { TokenController, TokenValidationResponse } from './TokenController';
@@ -20,10 +21,10 @@ export class UserController {
 	}
 
 	public login(req: Request, res: Response) {
-		const user: User = new User({
+		const user: IUser = {
 			email: req.body.email,
 			password: req.body.password
-		});
+		};
 
 		let errorMessage;
 		if (!Validations.isEmailValid(user.email)) {
@@ -39,7 +40,7 @@ export class UserController {
 			});
 		}
 
-		const generateToken = (_user: User) => {
+		const generateToken = (_user: IUser) => {
 			const tokenController = new TokenController(dbHelper.db);
 			tokenController.generateToken(_user)
 				.then(_token => {
@@ -60,7 +61,8 @@ export class UserController {
 						code: 0,
 						data: {
 							token: _token,
-							profile: userProfile
+							profile: userProfile,
+							roleId: _user.roleId
 						}
 					});
 				});
@@ -118,33 +120,35 @@ export class UserController {
 
 	public register(req: Request, res: Response) {
 		let errorMessage = null;
-		let user = new User({
+		const user: IUser = {
 			email: req.body.email,
 			password: req.body.password,
 			mobile: req.body.mobile,
-			dob: req.body.dob,
 			gender: req.body.gender,
 			firstName: req.body.firstName,
-			lastName: req.body.lastName
-		});
+			lastName: req.body.lastName,
+			roleId: req.body.roleId
+		};
 
 		if (!Validations.isEmailValid(user.email)) {
-			errorMessage = 'Email is not valid';
+			errorMessage = Constants.RESPONSE_INVALID_EMAIL;
 		} else if (!Validations.isMobileValid(user.mobile)) {
-			errorMessage = 'Mobile is not valid';
+			errorMessage = Constants.RESPONSE_INVALID_MOBILE;
 		} else if (!Validations.isNameValid(user.firstName)) {
-			errorMessage = 'First name is not valid';
+			errorMessage = Constants.RESPONSE_INVALID_FIRST_NAME;
 		} else if (!Validations.isNameValid(user.lastName)) {
-			errorMessage = 'Last name is not valid';
+			errorMessage = Constants.RESPONSE_INVALID_LAST_NAME;
 		} else if (!Validations.isGenderValid(user.gender)) {
-			errorMessage = 'Gender is not valid';
+			errorMessage = Constants.RESPONSE_INVALID_GENDER;
 		} else if (Utils.nullToObject(user.password, '').length === 0) {
-			errorMessage = 'Password is not valid';
+			errorMessage = Constants.RESPONSE_INVALID_PASSWORD;
+		} else if ('roleId' in user === false) {
+			errorMessage = Constants.RESPONSE_INVALID_ROLE;
 		}
 
 		if (errorMessage) {
 			return res.json({
-				code: -1,
+				code: -100,
 				message: errorMessage
 			});
 		}
@@ -304,7 +308,7 @@ export class UserController {
 		}
 
 		let errorMessage = null;
-		let user = req.body;
+		const user = req.body;
 
 		if (!Validations.isEmailValid(user.email)) {
 			errorMessage = Constants.RESPONSE_INVALID_EMAIL;
@@ -377,7 +381,7 @@ export class UserController {
 
 		const saveImage = () => {
 			if (user.image) {
-				var base64Data = user.image.replace(/^data:image\/png;base64,/, '');
+				const base64Data = user.image.replace(/^data:image\/png;base64,/, '');
 				const fileName = Date.now() + '.png';
 
 				require('fs').writeFile(Constants.FILE_UPLOAD_PATH + fileName, base64Data, 'base64', function (err) {
@@ -394,7 +398,7 @@ export class UserController {
 			}
 		};
 
-		let tokenController = new TokenController(dbHelper.db);
+		const tokenController = new TokenController(dbHelper.db);
 		tokenController.isTokenValid(token.toString(), res)
 			.then((_tokenResponse: TokenValidationResponse) => {
 				if (!_tokenResponse) {

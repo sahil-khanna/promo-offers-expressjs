@@ -27,12 +27,12 @@ export class VendorController {
 			name: req.body.name,
 			image: req.body.image,
 			email: req.body.email,
-			website: req.body.email,
+			website: req.body.website,
 			description: req.body.description
 		};
 
 		let errorMessage;
-		if (!Validations.isNameValid(vendor.email)) {
+		if (!Validations.isNameValid(vendor.name)) {
 			errorMessage = Constants.RESPONSE_INVALID_NAME;
 		} else if (vendor.email && !Validations.isEmailValid(vendor.email)) {
 			errorMessage = Constants.RESPONSE_INVALID_EMAIL;
@@ -73,6 +73,25 @@ export class VendorController {
 				});
 		};
 
+		const saveImage = () => {
+			if (vendor.image) {
+				const base64Data = vendor.image.replace(/^data:image\/png;base64,/, '');
+				const fileName = Date.now() + '.png';
+
+				require('fs').writeFile(Constants.FILE_UPLOAD_PATH + fileName, base64Data, 'base64', function (err: any) {
+					if (err) {
+						vendor.image = null;
+					} else {
+						vendor.image = Constants.FILE_UPLOAD_PATH + fileName;
+					}
+
+					insertIntoDB();
+				});
+			} else {
+				insertIntoDB();
+			}
+		};
+
 		const tokenController = new TokenController(dbHelper.db);
 		tokenController.isTokenValid(token.toString(), res)
 			.then((_tokenResponse: TokenValidationResponse) => {
@@ -83,7 +102,7 @@ export class VendorController {
 					});
 				} else {
 					res = _tokenResponse.response;
-					insertIntoDB();
+					saveImage();
 				}
 			})
 			.catch(() => {
