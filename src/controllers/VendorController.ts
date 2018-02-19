@@ -11,6 +11,7 @@ export class VendorController {
 
 	constructor() {
 		this.add.bind(this.add);
+		this.list.bind(this.list);
 	}
 
 	public add(req: Request, res: Response) {
@@ -28,7 +29,8 @@ export class VendorController {
 			image: req.body.image,
 			email: req.body.email,
 			website: req.body.website,
-			description: req.body.description
+			description: req.body.description,
+			status: true
 		};
 
 		let errorMessage;
@@ -109,6 +111,50 @@ export class VendorController {
 				return res.json({
 					code: -1,
 					message: Constants.RESPONSE_INVALID_TOKEN
+				});
+			});
+	}
+
+	public list(req: Request, res: Response) {
+		// const token = req.headers[Constants.TOKEN_HEADER_KEY];
+
+		// if (!token) {
+		// 	return res.json({
+		// 		code: -1,
+		// 		message: Constants.RESPONSE_INVALID_TOKEN
+		// 	});
+		// }
+
+		const skip = Utils.nullToObject(req.params.skip, 0);
+		let limit = Utils.nullToObject(req.params.skip, 20);
+		limit = (limit > 20) ? 20 : limit;
+
+		const vendors = [];
+		// TODO: Remove unwanted columns using projections
+		dbHelper.db.collection(Constants.DB_COLLECTIONS.VENDOR).find({ status: true }).skip(skip).limit(limit)
+		.forEach(function(vendor: IVendor) {
+			// vendors.push({
+			// 	email: vendor.email,
+			// })
+			console.log(vendor);
+			// const d = item['_id'];
+		}, function(end) {
+			console.log(end);
+		});
+
+
+		dbHelper.db.collection(Constants.DB_COLLECTIONS.VENDOR).find({ status: true }).skip(skip).limit(limit).toArray()
+			.then((_dbResult: any[]) => {
+					res.json({
+						code: 0,
+						data: _dbResult
+					});
+				}
+			)
+			.catch(() => {
+				res.json({
+					code: -1,
+					message: Constants.RESPONSE_EMAIL_ALREADY_REGISTERED
 				});
 			});
 	}

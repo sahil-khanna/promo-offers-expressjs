@@ -51,6 +51,7 @@ class App {
 		app.post(urlPrefix + 'contribute', new ContributionController().add);
 		app.get(urlPrefix + 'contributions', new ContributionController().get);
 		app.post(urlPrefix + 'create-vendor', new VendorController().add);
+		app.get(urlPrefix + 'vendors/*', new VendorController().list);
 
 		app.get('/resources/uploads/*', function (req: Request, res: Response) {
 			const split = __dirname.split('/');

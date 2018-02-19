@@ -4,4 +4,5 @@ export interface IVendor {
 	email?: string;
 	website?: string;
 	description?: string;
+	status: boolean;
 }
