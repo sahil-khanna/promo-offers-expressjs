@@ -10,15 +10,6 @@ import { TokenController, TokenValidationResponse } from './TokenController';
 import { dbHelper } from '../helper/DBHelper';
 
 export class UserController {
-	constructor() {
-		this.login = this.login.bind(this);
-		this.register = this.register.bind(this);
-		this.profile = this.profile.bind(this);
-		this.activateAccount = this.activateAccount.bind(this);
-		this.forgotPassword = this.forgotPassword.bind(this);
-		this.resetPassword = this.resetPassword.bind(this);
-		this.logout = this.logout.bind(this);
-	}
 
 	public login(req: Request, res: Response) {
 		const user: IUser = {

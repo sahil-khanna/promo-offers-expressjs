@@ -53,6 +53,7 @@ class App {
 		app.post(urlPrefix + 'vendors', new VendorController().add);
 		app.put(urlPrefix + 'vendors', new VendorController().update);
 		app.get(urlPrefix + 'vendors/*', new VendorController().list);
+		app.delete(urlPrefix + 'vendors/*', new VendorController().delete);
 
 		app.get('/resources/uploads/*', function (req: Request, res: Response) {
 			const split = __dirname.split('/');

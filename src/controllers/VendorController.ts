@@ -9,11 +9,6 @@ import { TokenController, TokenValidationResponse } from './TokenController';
 
 export class VendorController {
 
-	constructor() {
-		this.add.bind(this.add);
-		this.list.bind(this.list);
-	}
-
 	public add(req: Request, res: Response) {
 		const token = req.headers[Constants.TOKEN_HEADER_KEY];
 
@@ -128,7 +123,6 @@ export class VendorController {
 		const vendor: IVendor = {
 			name: req.body.name,
 			image: req.body.image,
-			email: req.body.email,
 			website: req.body.website,
 			description: req.body.description,
 			status: true
@@ -145,6 +139,8 @@ export class VendorController {
 			errorMessage = Constants.RESPONSE_INVALID_DESCRIPTION;
 		} else if (vendor.website && vendor.website.length === 0) {
 			errorMessage = Constants.RESPONSE_INVALID_WEBSITE;
+		} else if (Utils.nullToObject(req.body.id, '').length === 0) {
+			errorMessage = Constants.RESPONSE_UNABLE_TO_PROCESS;
 		}
 
 		if (errorMessage) {
@@ -157,13 +153,13 @@ export class VendorController {
 		const updateIntoDB = () => {
 			// Update into DB if not already inserted
 			dbHelper.db.collection(Constants.DB_COLLECTIONS.VENDOR).updateOne(
-				{ email: vendor.email },
+				{ _id: req.body.id },
 				{ $set: vendor }
 			)
 				.then(_dbResult => {
 					res.json({
 						code: 0,
-						message: Constants.RESPONSE_VENDOR_ADDED
+						message: Constants.RESPONSE_INFORMATION_UPDATED
 					});
 				})
 				.catch(() => {
@@ -175,7 +171,8 @@ export class VendorController {
 		};
 
 		const saveImage = () => {
-			if (vendor.image) {
+			if (vendor.image && vendor.image !== 'no_change') {
+				console.log(vendor.image);
 				const base64Data = vendor.image.replace(/^data:image\/png;base64,/, '');
 				const fileName = Date.now() + '.png';
 
@@ -189,6 +186,7 @@ export class VendorController {
 					updateIntoDB();
 				});
 			} else {
+				delete vendor.image;
 				updateIntoDB();
 			}
 		};
@@ -224,8 +222,9 @@ export class VendorController {
 			});
 		}
 
-		const skip = Utils.nullToObject(req.params.skip, 0);
-		let limit = Utils.nullToObject(req.params.skip, 20);
+		const params: any = Utils.deparam(req.params[0]);
+		const skip = Utils.nullToObject(params.skip, 0);
+		let limit = Utils.nullToObject(params.skip, 20);
 		limit = (limit > 20) ? 20 : limit;
 
 		const vendors = [];
@@ -245,6 +244,67 @@ export class VendorController {
 				res.json({
 					code: -1,
 					message: err.message
+				});
+			});
+	}
+
+	public delete(req: Request, res: Response) {
+		const token = req.headers[Constants.TOKEN_HEADER_KEY];
+
+		if (!token) {
+			return res.json({
+				code: -1,
+				message: Constants.RESPONSE_INVALID_TOKEN
+			});
+		}
+
+		const params: any = Utils.deparam(req.params[0]);
+		console.log(req.params[0]);
+
+		if (Utils.nullToObject(params.id, '').length === 0) {
+			return res.json({
+				code: -1,
+				message: Constants.RESPONSE_UNABLE_TO_PROCESS
+			});
+		}
+
+		const updateIntoDB = () => {
+			// Update into DB if not already inserted
+			dbHelper.db.collection(Constants.DB_COLLECTIONS.VENDOR).updateOne(
+				{ _id: params.id },
+				{ $set: { status: false} }
+			)
+				.then(_dbResult => {
+					res.json({
+						code: 0,
+						message: Constants.RESPONSE_INFORMATION_UPDATED
+					});
+				})
+				.catch(() => {
+					res.json({
+						code: 0,
+						message: Constants.RESPONSE_UNABLE_TO_PROCESS
+					});
+				});
+		};
+
+		const tokenController = new TokenController(dbHelper.db);
+		tokenController.isTokenValid(token.toString(), res)
+			.then((_tokenResponse: TokenValidationResponse) => {
+				if (!_tokenResponse) {
+					return res.json({
+						code: -1,
+						message: Constants.RESPONSE_INVALID_TOKEN
+					});
+				} else {
+					res = _tokenResponse.response;
+					updateIntoDB();
+				}
+			})
+			.catch(() => {
+				return res.json({
+					code: -1,
+					message: Constants.RESPONSE_INVALID_TOKEN
 				});
 			});
 	}
