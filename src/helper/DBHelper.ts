@@ -17,27 +17,12 @@ class DBHelper {
 	// }
 
 	public connect() {
-		// MongoClient.connect('mongodb://sahil.khanna:MyPassword@ds135757.mlab.com:35757/user-profile-us', (err, db) => {
+		// const mongoose = require('mongoose');
+		// mongoose.connect('mongodb://sahil.khanna:MyPassword@ds135757.mlab.com:35757/user-profile-us', function(err) {
 		// 	if (err) {
-		// 		console.log('mongoose error: ' + err);
+		// 		console.log('EB error: ' + err);
 		// 	} else {
-		// 		console.log('mongoose db: ' + db);
-
-		// 		const user = new User({
-		// 			firstName: 'ee',
-		// 			lastName: 'ee',
-		// 			email: 'eee@fff.com',
-		// 			gender: true,
-		// 			mobile: '333',
-		// 			password: '333',
-		// 			isActivated: true
-		// 		});
-
-		// 		user.save().then(() => {
-		// 			console.log('saved');
-		// 		}).catch((err) => {
-		// 			console.log('not saved:' + err);
-		// 		});
+		// 		console.log('DB connected');
 		// 	}
 		// });
 

@@ -6,6 +6,8 @@ import { Utils } from '../helper/Utils';
 import { dbHelper } from '../helper/DBHelper';
 import { constants } from 'fs';
 import { TokenController, TokenValidationResponse } from './TokenController';
+import { ObjectId } from 'bson';
+// import { ObjectId } from 'mongodb';
 
 export class VendorController {
 
@@ -25,7 +27,8 @@ export class VendorController {
 			email: req.body.email,
 			website: req.body.website,
 			description: req.body.description,
-			status: true
+			status: true,
+			isEnabled: true
 		};
 
 		let errorMessage;
@@ -125,7 +128,8 @@ export class VendorController {
 			image: req.body.image,
 			website: req.body.website,
 			description: req.body.description,
-			status: true
+			status: true,
+			isEnabled: req.body.isEnabled
 		};
 
 		let errorMessage;
@@ -141,6 +145,8 @@ export class VendorController {
 			errorMessage = Constants.RESPONSE_INVALID_WEBSITE;
 		} else if (Utils.nullToObject(req.body.id, '').length === 0) {
 			errorMessage = Constants.RESPONSE_UNABLE_TO_PROCESS;
+		} else if (typeof vendor.isEnabled !== 'boolean') {
+			errorMessage = Constants.RESPONSE_UNABLE_TO_PROCESS;
 		}
 
 		if (errorMessage) {
@@ -151,9 +157,9 @@ export class VendorController {
 		}
 
 		const updateIntoDB = () => {
-			// Update into DB if not already inserted
+			console.log(req.body.id);
 			dbHelper.db.collection(Constants.DB_COLLECTIONS.VENDOR).updateOne(
-				{ _id: req.body.id },
+				{ '_id': new ObjectId(req.body.id) },
 				{ $set: vendor }
 			)
 				.then(_dbResult => {
@@ -223,8 +229,8 @@ export class VendorController {
 		}
 
 		const params: any = Utils.deparam(req.params[0]);
-		const skip = Utils.nullToObject(params.skip, 0);
-		let limit = Utils.nullToObject(params.skip, 20);
+		const skip = parseInt(Utils.nullToObject(params.skip, 0));
+		let limit = parseInt(Utils.nullToObject(params.skip, 20));
 		limit = (limit > 20) ? 20 : limit;
 
 		const vendors = [];
@@ -259,7 +265,6 @@ export class VendorController {
 		}
 
 		const params: any = Utils.deparam(req.params[0]);
-		console.log(req.params[0]);
 
 		if (Utils.nullToObject(params.id, '').length === 0) {
 			return res.json({
@@ -269,15 +274,15 @@ export class VendorController {
 		}
 
 		const updateIntoDB = () => {
-			// Update into DB if not already inserted
 			dbHelper.db.collection(Constants.DB_COLLECTIONS.VENDOR).updateOne(
-				{ _id: params.id },
+				{ '_id': new ObjectId(params.id) },
 				{ $set: { status: false} }
 			)
 				.then(_dbResult => {
+					console.log(_dbResult);
 					res.json({
 						code: 0,
-						message: Constants.RESPONSE_INFORMATION_UPDATED
+						message: Constants.RESPONSE_RECORD_DELETED
 					});
 				})
 				.catch(() => {

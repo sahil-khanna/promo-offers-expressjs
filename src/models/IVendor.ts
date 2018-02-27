@@ -5,4 +5,5 @@ export interface IVendor {
 	website?: string;
 	description?: string;
 	status: boolean;
+	isEnabled: boolean;
 }

@@ -31,8 +31,11 @@ export class Utils {
 			return {};
 		}
 
+		if (param.charAt(param.length - 1) === '/') {
+			param = param.substring(0, param.length - 1);
+		}
+
 		const split = param.split('/');
-		console.log(split);
 		if (split.length % 2 !== 0) {
 			return {};
 		}

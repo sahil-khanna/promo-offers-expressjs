@@ -46,7 +46,7 @@ export class Constants {
 	public static RESPONSE_INVALID_ADDRESS = 'Address is not valid';
 	public static RESPONSE_VENDOR_ADDED = 'Vendor added';
 	public static RESPONSE_INFORMATION_UPDATED = 'Information updated successfully';
-	public static RESPONSE_RECORD_DELETED = 'Record seleted successfully';
+	public static RESPONSE_RECORD_DELETED = 'Record deleted successfully';
 	public static RESPONSE_EMAIL_ALREADY_REGISTERED = 'Email already registered. Try entering a different email';
 	public static RESPONSE_USER_REGISTERED = 'Account registered. Check your email for instructions to activate your account. The activation URL is also printed on console';
 }
