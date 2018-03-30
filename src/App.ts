@@ -12,6 +12,8 @@ import { User, IUser, IUserModel } from './schema/User';
 import { Promise } from 'bluebird';
 import { dbHelper } from './helper/DBHelper';
 import { VendorController } from './controllers/VendorController';
+import { Validator } from 'express-validator';
+import * as expressValidator from 'express-validator';
 
 // Creates and configures an ExpressJS web server.
 class App {
@@ -34,6 +36,7 @@ class App {
 		this.express.use(logger('dev'));
 		this.express.use(bodyParser.json({ limit: '50mb' }));
 		this.express.use(bodyParser.urlencoded({ extended: false }));
+		this.express.use(expressValidator());
 	}
 
 	// Configure API endpoints.

@@ -8,6 +8,8 @@ import { CryptoHelper } from '../helper/CryptoHelper';
 import { Utils } from '../helper/Utils';
 import { TokenController, TokenValidationResponse } from './TokenController';
 import { dbHelper } from '../helper/DBHelper';
+import { Validator } from 'express-validator';
+import { check } from 'express-validator/check';
 
 export class UserController {
 
@@ -17,17 +19,15 @@ export class UserController {
 			password: req.body.password
 		};
 
-		let errorMessage;
-		if (!Validations.isEmailValid(user.email)) {
-			errorMessage = Constants.RESPONSE_INVALID_EMAIL;
-		} else if (Utils.nullToObject(user.password, '').length === 0) {
-			errorMessage = Constants.RESPONSE_INVALID_PASSWORD;
-		}
+		req.checkBody('email', Constants.RESPONSE_INVALID_EMAIL).isEmail();
+		req.checkBody('password', Constants.RESPONSE_INVALID_PASSWORD).exists();
 
-		if (errorMessage) {
+		const errors: any = req.validationErrors();
+
+		if (errors !== false) {
 			return res.json({
 				code: -1,
-				message: errorMessage
+				message: errors[0].msg
 			});
 		}
 
