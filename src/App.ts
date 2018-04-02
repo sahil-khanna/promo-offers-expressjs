@@ -6,7 +6,6 @@ import * as bodyParser from 'body-parser';
 import { MongoClient } from 'mongodb';
 import { Mongoose } from 'mongoose';
 import { UserController } from './controllers/UserController';
-import { ContributionController } from './controllers/ContributionController';
 import { Constants } from './helper/Constants';
 import { User, IUser, IUserModel } from './schema/User';
 import { Promise } from 'bluebird';
@@ -37,6 +36,12 @@ class App {
 		this.express.use(bodyParser.json({ limit: '50mb' }));
 		this.express.use(bodyParser.urlencoded({ extended: false }));
 		this.express.use(expressValidator());
+		
+		// this.express.use(expressValidator({
+		// 	customValidators: {
+				
+		// 	}
+		// }));
 	}
 
 	// Configure API endpoints.
@@ -51,8 +56,6 @@ class App {
 		app.get(urlPrefix + 'forgot-password/*', new UserController().forgotPassword);
 		app.put(urlPrefix + 'reset-password', new UserController().resetPassword);
 		app.get(urlPrefix + 'logout', new UserController().logout);
-		app.post(urlPrefix + 'contribute', new ContributionController().add);
-		app.get(urlPrefix + 'contributions', new ContributionController().get);
 		app.post(urlPrefix + 'vendors', new VendorController().add);
 		app.put(urlPrefix + 'vendors', new VendorController().update);
 		app.get(urlPrefix + 'vendors/*', new VendorController().list);

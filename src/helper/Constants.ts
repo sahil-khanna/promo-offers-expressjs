@@ -4,7 +4,8 @@ export class Constants {
 		USER: 'user',
 		TOKEN: 'token',
 		CONTRIBUTION: 'contribution',
-		VENDOR: 'vendor'
+		VENDOR: 'vendor',
+		OFFER: 'offer'
 	};
 
 	public static PROJECT_SECRET_KEY = 'Hello_User_Profile_Project';
@@ -37,16 +38,20 @@ export class Constants {
 	public static RESPONSE_INVALID_NAME = 'Name is not valid';
 	public static RESPONSE_INVALID_FIRST_NAME = 'First name is not valid';
 	public static RESPONSE_INVALID_LAST_NAME = 'Last name is not valid';
-	public static RESPONSE_INVALID_CONTRIBUTION_TYPE = 'Type is not valid';
-	public static RESPONSE_INVALID_CONTRIBUTION_COOKED_ON = 'Cooked On is not valid';
-	public static RESPONSE_INVALID_CONTRIBUTION_CAN_SERVE = 'Can Serve is not valid';
+	public static RESPONSE_INVALID_TYPE = 'Type is not valid';
+	public static RESPONSE_INVALID_MAX_DISCOUNT_AMOUNT = 'Max. discount amount is not valid';
+	public static RESPONSE_INVALID_MIN_PURCHASE_AMOUNT = 'Min. purchase amount is not valid';
 	public static RESPONSE_INVALID_CONTRIBUTION_IS_PACKED = 'Is Packed is not valid';
 	public static RESPONSE_INVALID_DESCRIPTION = 'Description is not valid';
 	public static RESPONSE_INVALID_WEBSITE = 'Website is not valid';
 	public static RESPONSE_INVALID_ADDRESS = 'Address is not valid';
 	public static RESPONSE_VENDOR_ADDED = 'Vendor added';
+	public static RESPONSE_INVALID_VENDOR = 'Vendor is not valid';
 	public static RESPONSE_INFORMATION_UPDATED = 'Information updated successfully';
 	public static RESPONSE_RECORD_DELETED = 'Record deleted successfully';
 	public static RESPONSE_EMAIL_ALREADY_REGISTERED = 'Email already registered. Try entering a different email';
 	public static RESPONSE_USER_REGISTERED = 'Account registered. Check your email for instructions to activate your account. The activation URL is also printed on console';
+	public static RESPONSE_INVALID_TITLE = 'Title is not valid';
+	public static RESPONSE_INVALID_START_DATE_TIME = 'Start datetime is not valid';
+	public static RESPONSE_INVALID_END_DATE_TIME = 'End datetime is not valid';
 }

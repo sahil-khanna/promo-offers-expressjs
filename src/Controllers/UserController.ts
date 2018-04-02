@@ -14,11 +14,6 @@ import { check } from 'express-validator/check';
 export class UserController {
 
 	public login(req: Request, res: Response) {
-		const user: IUser = {
-			email: req.body.email,
-			password: req.body.password
-		};
-
 		req.checkBody('email', Constants.RESPONSE_INVALID_EMAIL).isEmail();
 		req.checkBody('password', Constants.RESPONSE_INVALID_PASSWORD).exists();
 
@@ -30,6 +25,11 @@ export class UserController {
 				message: errors[0].msg
 			});
 		}
+
+		const user: IUser = {
+			email: req.body.email,
+			password: req.body.password
+		};
 
 		const generateToken = (_user: IUser) => {
 			const tokenController = new TokenController(dbHelper.db);
@@ -110,7 +110,23 @@ export class UserController {
 	}
 
 	public register(req: Request, res: Response) {
-		let errorMessage = null;
+		req.checkBody('email', Constants.RESPONSE_INVALID_EMAIL).isEmail();
+		req.checkBody('mobile', Constants.RESPONSE_INVALID_MOBILE).isMobilePhone('en-IN');
+		req.checkBody('firstName', Constants.RESPONSE_INVALID_FIRST_NAME).isAlpha().isLength({min: 1, max: 30});
+		req.checkBody('lastName', Constants.RESPONSE_INVALID_LAST_NAME).isAlpha().isLength({min: 1, max: 30});
+		req.checkBody('gender', Constants.RESPONSE_INVALID_GENDER).isBoolean();
+		req.checkBody('password', Constants.RESPONSE_INVALID_PASSWORD).isLength({min: 3, max: 30});
+		req.checkBody('roleId', Constants.RESPONSE_INVALID_ROLE).isNumeric();
+
+		const errors: any = req.validationErrors();
+
+		if (errors !== false) {
+			return res.json({
+				code: -1,
+				message: errors[0].msg
+			});
+		}
+
 		const user: IUser = {
 			email: req.body.email,
 			password: req.body.password,
@@ -120,29 +136,6 @@ export class UserController {
 			lastName: req.body.lastName,
 			roleId: req.body.roleId
 		};
-
-		if (!Validations.isEmailValid(user.email)) {
-			errorMessage = Constants.RESPONSE_INVALID_EMAIL;
-		} else if (!Validations.isMobileValid(user.mobile)) {
-			errorMessage = Constants.RESPONSE_INVALID_MOBILE;
-		} else if (!Validations.isNameValid(user.firstName)) {
-			errorMessage = Constants.RESPONSE_INVALID_FIRST_NAME;
-		} else if (!Validations.isNameValid(user.lastName)) {
-			errorMessage = Constants.RESPONSE_INVALID_LAST_NAME;
-		} else if (!Validations.isGenderValid(user.gender)) {
-			errorMessage = Constants.RESPONSE_INVALID_GENDER;
-		} else if (Utils.nullToObject(user.password, '').length === 0) {
-			errorMessage = Constants.RESPONSE_INVALID_PASSWORD;
-		} else if ('roleId' in user === false) {
-			errorMessage = Constants.RESPONSE_INVALID_ROLE;
-		}
-
-		if (errorMessage) {
-			return res.json({
-				code: -100,
-				message: errorMessage
-			});
-		}
 
 		user.activationKey = CryptoHelper.hash(user.email + Date.now());    // To make the activation key unique
 		user.isActivated = false;

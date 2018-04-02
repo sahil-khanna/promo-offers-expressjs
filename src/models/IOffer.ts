@@ -10,4 +10,5 @@ export interface IOffer {
 	maxDiscountAmount?: Number;
 	status: boolean;
 	isEnabled: boolean;
+	vendorId: string;
 }
