@@ -109,6 +109,33 @@ export class UserController {
 			});
 	}
 
+	public createUser(user: IUser) {
+		user.activationKey = CryptoHelper.hash(user.email + Date.now());    // To make the activation key unique
+		user.isActivated = false;
+		user.password = CryptoHelper.hash(user.password);
+
+		// Insert into DB if not already inserted
+		dbHelper.db.collection(Constants.DB_COLLECTIONS.USER).updateOne(
+			{ email: user.email },
+			{ $setOnInsert: user },
+			{ upsert: true }
+		)
+			.then(_dbResult => {
+				if ('upserted' in _dbResult.result) {
+					return {
+						code: 0,
+						message: Constants.RESPONSE_USER_REGISTERED,
+						data: 'http://localhost:4200/activate-account/' + user.activationKey
+					};
+				} else {
+					return {
+						code: -1,
+						message: Constants.RESPONSE_EMAIL_ALREADY_REGISTERED
+					};
+				}
+			});
+	}
+
 	public register(req: Request, res: Response) {
 		req.checkBody('email', Constants.RESPONSE_INVALID_EMAIL).isEmail();
 		req.checkBody('mobile', Constants.RESPONSE_INVALID_MOBILE).isMobilePhone('en-IN');
@@ -137,30 +164,7 @@ export class UserController {
 			roleId: req.body.roleId
 		};
 
-		user.activationKey = CryptoHelper.hash(user.email + Date.now());    // To make the activation key unique
-		user.isActivated = false;
-		user.password = CryptoHelper.hash(user.password);
-
-		// Insert into DB if not already inserted
-		dbHelper.db.collection(Constants.DB_COLLECTIONS.USER).updateOne(
-			{ email: user.email },
-			{ $setOnInsert: user },
-			{ upsert: true }
-		)
-			.then(_dbResult => {
-				if ('upserted' in _dbResult.result) {
-					res.json({
-						code: 0,
-						message: Constants.RESPONSE_USER_REGISTERED,
-						data: 'http://localhost:4200/activate-account/' + user.activationKey
-					});
-				} else {
-					res.json({
-						code: -1,
-						message: Constants.RESPONSE_EMAIL_ALREADY_REGISTERED
-					});
-				}
-			});
+		res.json(this.createUser(user));
 	}
 
 	public forgotPassword(req: Request, res: Response) {
