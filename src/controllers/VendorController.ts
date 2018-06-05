@@ -6,7 +6,10 @@ import { Utils } from '../helper/Utils';
 import { dbHelper } from '../helper/DBHelper';
 import { constants } from 'fs';
 import { TokenController, TokenValidationResponse } from './TokenController';
-import { ObjectId } from 'bson';
+import { ObjectId, ObjectID } from 'bson';
+import { UserController } from './UserController';
+import { IUser } from '../models/IUser';
+import { userInfo } from 'os';
 // import { ObjectId } from 'mongodb';
 
 export class VendorController {
@@ -23,11 +26,11 @@ export class VendorController {
 
 		const vendor: IVendor = {
 			name: req.body.name,
-			image: req.body.image,
+			imagePath: req.body.image,
 			email: req.body.email,
 			website: req.body.website,
 			description: req.body.description,
-			status: true,
+			status: true,	// TODO: DELETE USER
 			isEnabled: true
 		};
 
@@ -36,7 +39,7 @@ export class VendorController {
 			errorMessage = Constants.RESPONSE_INVALID_NAME;
 		} else if (vendor.email && !Validations.isEmailValid(vendor.email)) {
 			errorMessage = Constants.RESPONSE_INVALID_EMAIL;
-		} else if (Utils.nullToObject(vendor.image, '').length === 0) {
+		} else if (Utils.nullToObject(vendor.imagePath, '').length === 0) {
 			errorMessage = Constants.RESPONSE_INVALID_IMAGE;
 		} else if (vendor.description && vendor.description.length === 0) {
 			errorMessage = Constants.RESPONSE_INVALID_DESCRIPTION;
@@ -51,7 +54,7 @@ export class VendorController {
 			});
 		}
 
-		const insertIntoDB = () => {
+		const createVendor = (activationKey: string) => {
 			// Insert into DB if not already inserted
 			dbHelper.db.collection(Constants.DB_COLLECTIONS.VENDOR).updateOne(
 				{ email: vendor.email },
@@ -62,7 +65,8 @@ export class VendorController {
 					if ('upserted' in _dbResult.result) {
 						res.json({
 							code: 0,
-							message: Constants.RESPONSE_VENDOR_ADDED
+							message: Constants.RESPONSE_VENDOR_ADDED,
+							data: Constants.WEBSITE_URL + '/forgot-password'
 						});
 					} else {
 						res.json({
@@ -73,22 +77,43 @@ export class VendorController {
 				});
 		};
 
+		const createUser = () => {
+			// TODO: Once activated, send password reset URL to vendor
+			const user: IUser = {
+				email: vendor.email,
+				roleId: Constants.USER_ROLE.VENDOR,
+				isActivated: true,
+				password: Date.now().toString()
+			};
+
+			const userController: UserController = new UserController();
+			const response: any = userController.createUser(user);
+
+			if (response === null) {
+				return res.json({
+					code: -1,
+					message: Constants.RESPONSE_EMAIL_ALREADY_REGISTERED
+				});
+			} else {
+				createVendor(response);
+			}
+		};
+
 		const saveImage = () => {
-			if (vendor.image) {
-				const base64Data = vendor.image.replace(/^data:image\/png;base64,/, '');
+			if (vendor.imagePath) {
+				const base64Data = vendor.imagePath.replace(/^data:image\/png;base64,/, '');
 				const fileName = Date.now() + '.png';
 
 				require('fs').writeFile(Constants.FILE_UPLOAD_PATH + fileName, base64Data, 'base64', function (err: any) {
 					if (err) {
-						vendor.image = null;
+						delete vendor.imagePath;
 					} else {
-						vendor.image = Constants.FILE_UPLOAD_PATH + fileName;
+						vendor.imagePath = fileName;
 					}
-
-					insertIntoDB();
+					createUser();
 				});
 			} else {
-				insertIntoDB();
+				createUser();
 			}
 		};
 
@@ -125,7 +150,7 @@ export class VendorController {
 
 		const vendor: IVendor = {
 			name: req.body.name,
-			image: req.body.image,
+			imagePath: req.body.image,
 			website: req.body.website,
 			description: req.body.description,
 			status: true,
@@ -135,10 +160,10 @@ export class VendorController {
 		let errorMessage;
 		if (!Validations.isNameValid(vendor.name)) {
 			errorMessage = Constants.RESPONSE_INVALID_NAME;
-		} else if (vendor.email && !Validations.isEmailValid(vendor.email)) {
-			errorMessage = Constants.RESPONSE_INVALID_EMAIL;
-		} else if (Utils.nullToObject(vendor.image, '').length === 0) {
-			errorMessage = Constants.RESPONSE_INVALID_IMAGE;
+		// } else if (vendor.email && !Validations.isEmailValid(vendor.email)) {
+		// 	errorMessage = Constants.RESPONSE_INVALID_EMAIL;
+		// } else if (Utils.nullToObject(vendor.image, '').length === 0) {
+		// 	errorMessage = Constants.RESPONSE_INVALID_IMAGE;
 		} else if (vendor.description && vendor.description.length === 0) {
 			errorMessage = Constants.RESPONSE_INVALID_DESCRIPTION;
 		} else if (vendor.website && vendor.website.length === 0) {
@@ -177,24 +202,24 @@ export class VendorController {
 		};
 
 		const saveImage = () => {
-			if (vendor.image && vendor.image !== 'no_change') {
-				console.log(vendor.image);
-				const base64Data = vendor.image.replace(/^data:image\/png;base64,/, '');
-				const fileName = Date.now() + '.png';
+			// if (vendor.image && vendor.image !== 'no_change') {
+			// 	console.log(vendor.image);
+			// 	const base64Data = vendor.image.replace(/^data:image\/png;base64,/, '');
+			// 	const fileName = Date.now() + '.png';
 
-				require('fs').writeFile(Constants.FILE_UPLOAD_PATH + fileName, base64Data, 'base64', function (err: any) {
-					if (err) {
-						vendor.image = null;
-					} else {
-						vendor.image = Constants.FILE_UPLOAD_PATH + fileName;
-					}
+			// 	require('fs').writeFile(Constants.FILE_UPLOAD_PATH + fileName, base64Data, 'base64', function (err: any) {
+			// 		if (err) {
+			// 			vendor.image = null;
+			// 		} else {
+			// 			vendor.image = Constants.FILE_UPLOAD_PATH + fileName;
+			// 		}
 
-					updateIntoDB();
-				});
-			} else {
-				delete vendor.image;
-				updateIntoDB();
-			}
+			// 		updateIntoDB();
+			// 	});
+			// } else {
+			// 	delete vendor.image;
+			// 	updateIntoDB();
+			// }
 		};
 
 		const tokenController = new TokenController(dbHelper.db);
@@ -238,7 +263,7 @@ export class VendorController {
 		dbHelper.db.collection(Constants.DB_COLLECTIONS.VENDOR).find({ status: true }).skip(skip).limit(limit).toArray()
 			.then((_dbResult: any[]) => {
 					_dbResult.forEach(element => {
-						element.image = Constants.SELF_URL + '/' + element.image;
+						element.imagePath = Constants.SELF_URL + '/' + Constants.FILE_UPLOAD_PATH + '/' + element.imagePath;
 					});
 					res.json({
 						code: 0,

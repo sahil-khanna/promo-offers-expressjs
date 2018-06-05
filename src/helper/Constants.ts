@@ -8,6 +8,12 @@ export class Constants {
 		OFFER: 'offer'
 	};
 
+	public static USER_ROLE = {
+		ADMIN: 1,
+		VENDOR: 2,
+		GENERAL_USER: 3
+	};
+
 	public static PROJECT_SECRET_KEY = 'Hello_User_Profile_Project';
 
 	public static TOKEN_HEADER_KEY = 'x-token';
@@ -15,6 +21,7 @@ export class Constants {
 	public static FILE_UPLOAD_PATH = 'resources/uploads/';
 
 	public static SELF_URL = 'http://localhost:3000';
+	public static WEBSITE_URL = 'http://localhost:4200';
 
 	public static RESPONSE_LOGGED_OUT = 'Logged out';
 	public static RESPONSE_INVALID_TOKEN = 'Invalid token';
@@ -45,7 +52,7 @@ export class Constants {
 	public static RESPONSE_INVALID_DESCRIPTION = 'Description is not valid';
 	public static RESPONSE_INVALID_WEBSITE = 'Website is not valid';
 	public static RESPONSE_INVALID_ADDRESS = 'Address is not valid';
-	public static RESPONSE_VENDOR_ADDED = 'Vendor added';
+	public static RESPONSE_VENDOR_ADDED = 'Vendor added. To begin using account, reset password using the link below';
 	public static RESPONSE_INVALID_VENDOR = 'Vendor is not valid';
 	public static RESPONSE_INFORMATION_UPDATED = 'Information updated successfully';
 	public static RESPONSE_RECORD_DELETED = 'Record deleted successfully';

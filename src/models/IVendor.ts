@@ -1,6 +1,6 @@
 export interface IVendor {
 	name: string;
-	image: string;
+	imagePath: string;
 	email?: string;
 	website?: string;
 	description?: string;

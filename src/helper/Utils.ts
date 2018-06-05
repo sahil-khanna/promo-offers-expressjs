@@ -3,11 +3,10 @@ export class Utils {
 	/*
 	 *  Converts data to a target object iff it's null
 	 */
-	public static nullToObject(sourceType, targetType) {
+	public static nullToObject(sourceType: any, targetType: any) {
 		if (typeof sourceType === 'number' || typeof sourceType === 'boolean') {
 			return sourceType;
-		}
-		else {
+		} else {
 			return (sourceType == null) ? targetType : sourceType;
 		}
 	}

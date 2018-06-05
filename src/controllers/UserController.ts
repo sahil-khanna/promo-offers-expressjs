@@ -121,18 +121,7 @@ export class UserController {
 			{ upsert: true }
 		)
 			.then(_dbResult => {
-				if ('upserted' in _dbResult.result) {
-					return {
-						code: 0,
-						message: Constants.RESPONSE_USER_REGISTERED,
-						data: 'http://localhost:4200/activate-account/' + user.activationKey
-					};
-				} else {
-					return {
-						code: -1,
-						message: Constants.RESPONSE_EMAIL_ALREADY_REGISTERED
-					};
-				}
+				return ('upserted' in _dbResult.result) ? user.activationKey : null;
 			});
 	}
 
@@ -164,7 +153,19 @@ export class UserController {
 			roleId: req.body.roleId
 		};
 
-		res.json(this.createUser(user));
+		const response: any = this.createUser(user);
+		if (response == null) {
+			res.json({
+				code: -1,
+				message: Constants.RESPONSE_EMAIL_ALREADY_REGISTERED
+			});
+		} else {
+			res.json({
+				code: 0,
+				message: Constants.RESPONSE_USER_REGISTERED,
+				data: Constants.WEBSITE_URL + '/activate-account/' + response
+			});
+		}
 	}
 
 	public forgotPassword(req: Request, res: Response) {
@@ -372,7 +373,7 @@ export class UserController {
 				const base64Data = user.image.replace(/^data:image\/png;base64,/, '');
 				const fileName = Date.now() + '.png';
 
-				require('fs').writeFile(Constants.FILE_UPLOAD_PATH + fileName, base64Data, 'base64', function (err) {
+				require('fs').writeFile(Constants.FILE_UPLOAD_PATH + fileName, base64Data, 'base64', function (err: any) {
 					if (err) {
 						user.image = null;
 					} else {

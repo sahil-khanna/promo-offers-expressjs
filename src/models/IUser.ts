@@ -1,7 +1,10 @@
+import { ObjectId } from 'bson';
+
 export interface IUser {
+	id?: ObjectId;
 	firstName?: string;
 	lastName?: string;
-	email?: string;
+	email: string;
 	gender?: boolean;    // True = male, False = female
 	mobile?: string;
 	password?: string;

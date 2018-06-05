@@ -13,6 +13,5 @@ docker-compose.yml
 
 *.js
 dist
-uploads
-!uploads/.gitkeep
+resources/uploads/*.png
 package-lock.json

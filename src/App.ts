@@ -36,10 +36,8 @@ class App {
 		this.express.use(bodyParser.json({ limit: '50mb' }));
 		this.express.use(bodyParser.urlencoded({ extended: false }));
 		this.express.use(expressValidator());
-		
 		// this.express.use(expressValidator({
 		// 	customValidators: {
-				
 		// 	}
 		// }));
 	}
