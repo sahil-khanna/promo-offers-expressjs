@@ -109,21 +109,21 @@ export class UserController {
 			});
 	}
 
-	public createUser(user: IUser) {
-		user.activationKey = CryptoHelper.hash(user.email + Date.now());    // To make the activation key unique
-		user.isActivated = false;
-		user.password = CryptoHelper.hash(user.password);
+	// public createUser(user: IUser) {
+	// 	user.activationKey = CryptoHelper.hash(user.email + Date.now());    // To make the activation key unique
+	// 	user.isActivated = false;
+	// 	user.password = CryptoHelper.hash(user.password);
 
-		// Insert into DB if not already inserted
-		dbHelper.db.collection(Constants.DB_COLLECTIONS.USER).updateOne(
-			{ email: user.email },
-			{ $setOnInsert: user },
-			{ upsert: true }
-		)
-			.then(_dbResult => {
-				return ('upserted' in _dbResult.result) ? user.activationKey : null;
-			});
-	}
+	// 	// Insert into DB if not already inserted
+	// 	dbHelper.db.collection(Constants.DB_COLLECTIONS.USER).updateOne(
+	// 		{ email: user.email },
+	// 		{ $setOnInsert: user },
+	// 		{ upsert: true }
+	// 	)
+	// 		.then(_dbResult => {
+	// 			return ('upserted' in _dbResult.result) ? user.activationKey : null;
+	// 		});
+	// }
 
 	public register(req: Request, res: Response) {
 		req.checkBody('email', Constants.RESPONSE_INVALID_EMAIL).isEmail();
@@ -153,19 +153,31 @@ export class UserController {
 			roleId: req.body.roleId
 		};
 
-		const response: any = this.createUser(user);
-		if (response == null) {
-			res.json({
-				code: -1,
-				message: Constants.RESPONSE_EMAIL_ALREADY_REGISTERED
+		// TODO: This code is being used in Vendor Controller. This should be refactored in a single method
+		user.activationKey = CryptoHelper.hash(user.email + Date.now());    // To make the activation key unique
+		user.isActivated = false;
+		user.password = CryptoHelper.hash(user.password);
+
+		// Insert into DB if not already inserted
+		dbHelper.db.collection(Constants.DB_COLLECTIONS.USER).updateOne(
+			{ email: user.email },
+			{ $setOnInsert: user },
+			{ upsert: true }
+		)
+			.then(_dbResult => {
+				if ('upserted' in _dbResult.result) {
+					res.json({
+						code: 0,
+						message: Constants.RESPONSE_USER_REGISTERED,
+						data: Constants.WEBSITE_URL + '/activate-account/' + user.activationKey
+					});
+				} else {
+					res.json({
+						code: -1,
+						message: Constants.RESPONSE_EMAIL_ALREADY_REGISTERED
+					});
+				}
 			});
-		} else {
-			res.json({
-				code: 0,
-				message: Constants.RESPONSE_USER_REGISTERED,
-				data: Constants.WEBSITE_URL + '/activate-account/' + response
-			});
-		}
 	}
 
 	public forgotPassword(req: Request, res: Response) {

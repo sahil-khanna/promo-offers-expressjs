@@ -9,7 +9,7 @@ export class Validations {
 			return false;
 		}
 
-		return /^[a-zA-Z]+$/.test(name);
+		return /^[a-z A-Z]+$/.test(name);
 	}
 
 	public static isMobileValid(mobile: string) {

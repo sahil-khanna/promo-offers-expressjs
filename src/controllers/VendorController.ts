@@ -10,6 +10,7 @@ import { ObjectId, ObjectID } from 'bson';
 import { UserController } from './UserController';
 import { IUser } from '../models/IUser';
 import { userInfo } from 'os';
+import { CryptoHelper } from '../helper/CryptoHelper';
 // import { ObjectId } from 'mongodb';
 
 export class VendorController {
@@ -86,17 +87,27 @@ export class VendorController {
 				password: Date.now().toString()
 			};
 
-			const userController: UserController = new UserController();
-			const response: any = userController.createUser(user);
+			// TODO: This code is being used in User Controller. This should be refactored in a single method
+			user.activationKey = CryptoHelper.hash(user.email + Date.now());    // To make the activation key unique
+			user.isActivated = true;
+			user.password = CryptoHelper.hash(user.password);
 
-			if (response === null) {
-				return res.json({
-					code: -1,
-					message: Constants.RESPONSE_EMAIL_ALREADY_REGISTERED
+			// Insert into DB if not already inserted
+			dbHelper.db.collection(Constants.DB_COLLECTIONS.USER).updateOne(
+				{ email: user.email },
+				{ $setOnInsert: user },
+				{ upsert: true }
+			)
+				.then(_dbResult => {
+					if ('upserted' in _dbResult.result) {
+						createVendor(user.activationKey);
+					} else {
+						return res.json({
+							code: -1,
+							message: Constants.RESPONSE_EMAIL_ALREADY_REGISTERED
+						});
+					}
 				});
-			} else {
-				createVendor(response);
-			}
 		};
 
 		const saveImage = () => {
