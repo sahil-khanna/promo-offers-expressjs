@@ -15,10 +15,9 @@ export class OfferController {
 		req.checkHeaders(Constants.TOKEN_HEADER_KEY, Constants.RESPONSE_INVALID_TOKEN).exists();
 		req.checkBody('title', Constants.RESPONSE_INVALID_TITLE).isLength({min: 5, max: 50});
 		req.checkBody('description', Constants.RESPONSE_INVALID_DESCRIPTION).isLength({min: 20, max: 200});
-		req.checkBody('startDateTime', Constants.RESPONSE_INVALID_START_DATE_TIME).isNumeric();
-		req.checkBody('endDateTime', Constants.RESPONSE_INVALID_END_DATE_TIME).isNumeric();
-		req.checkBody('type', Constants.RESPONSE_INVALID_TYPE).equals('fixed_price' || 'percent');
-		req.checkBody('maxDiscountAmount', Constants.RESPONSE_INVALID_MAX_DISCOUNT_AMOUNT).isNumeric();
+		req.checkBody('offerStart', Constants.RESPONSE_INVALID_START_DATE).isLength({min: 10, max: 10});
+		req.checkBody('offerEnd', Constants.RESPONSE_INVALID_END_DATE).isLength({min: 10, max: 10});
+		req.checkBody('type', Constants.RESPONSE_INVALID_TYPE).isIn(['amount', 'percent']);
 		req.checkBody('minPurchaseAmount', Constants.RESPONSE_INVALID_MIN_PURCHASE_AMOUNT).isNumeric();
 		req.checkBody('vendorId', Constants.RESPONSE_INVALID_VENDOR).exists();
 
@@ -31,10 +30,11 @@ export class OfferController {
 			});
 		}
 
-		if (req.body.type === 'fixed_price') {
-			req.checkBody('fixedPriceOff', Constants.RESPONSE_INVALID_ROLE).isNumeric();
+		if (req.body.type === 'amount') {
+			req.checkBody('fixedDiscountAmount', Constants.RESPONSE_INVALID_FIXED_DISCOUNT_AMOUNT).isNumeric();
 		} else {
-			req.checkBody('percentageOff', Constants.RESPONSE_INVALID_ROLE).isNumeric();
+			req.checkBody('maxDiscountAmount', Constants.RESPONSE_INVALID_MAX_DISCOUNT_AMOUNT).isNumeric();
+			req.checkBody('discountPercent', Constants.RESPONSE_INVALID_DISCOUNT_PERCENT).isNumeric();
 		}
 
 		errors = req.validationErrors();
@@ -50,33 +50,35 @@ export class OfferController {
 		const offer: IOffer = {
 			title: req.body.title,
 			description: req.body.description,
-			startDateTime: req.body.startDateTime,
-			endDateTime: req.body.endDateTime,
+			offerStart: req.body.offerStart,
+			offerEnd: req.body.offerEnd,
 			type: req.body.type,
-			fixedPriceOff: req.body.type,
-			percentageOff: req.body.percentageOff,
-			maxDiscountAmount: req.body.maxDiscountAmount,
 			minPurchaseAmount: req.body.minPurchaseAmount,
 			status: true,
 			isEnabled: true,
 			vendorId: req.body.vendorId
 		};
 
+		if (offer.type === 'percent') {
+			offer.discountPercent = req.body.discountPercent;
+			offer.maxDiscountAmount = req.body.maxDiscountAmount;
+		} else {
+			offer.fixedDiscountAmount = req.body.fixedDiscountAmount;
+		}
+
 		const insertIntoDB = () => {
-			// Insert into DB if not already inserted
 			dbHelper.db.collection(Constants.DB_COLLECTIONS.OFFER).insertOne(offer)
-				.then(_dbResult => {
-					if ('upserted' in _dbResult.result) {
-						res.json({
-							code: 0,
-							message: Constants.RESPONSE_VENDOR_ADDED
-						});
-					} else {
-						res.json({
-							code: -1,
-							message: Constants.RESPONSE_EMAIL_ALREADY_REGISTERED
-						});
-					}
+				.then(() => {
+					res.json({
+						code: 0,
+						message: Constants.RESPONSE_OFFER_ADDED
+					});
+				})
+				.catch(() => {
+					res.json({
+						code: 0,
+						message: Constants.RESPONSE_UNABLE_TO_PROCESS
+					});
 				});
 		};
 

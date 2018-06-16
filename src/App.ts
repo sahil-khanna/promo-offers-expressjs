@@ -13,6 +13,7 @@ import { dbHelper } from './helper/DBHelper';
 import { VendorController } from './controllers/VendorController';
 import { Validator } from 'express-validator';
 import * as expressValidator from 'express-validator';
+import { OfferController } from './controllers/OfferController';
 
 // Creates and configures an ExpressJS web server.
 class App {
@@ -58,6 +59,10 @@ class App {
 		app.put(urlPrefix + 'vendors', new VendorController().update);
 		app.get(urlPrefix + 'vendors/*', new VendorController().list);
 		app.delete(urlPrefix + 'vendors/*', new VendorController().delete);
+		app.post(urlPrefix + 'offers', new OfferController().add);
+		// app.put(urlPrefix + 'offers', new OfferController().update);
+		// app.get(urlPrefix + 'offers/*', new OfferController().list);
+		// app.delete(urlPrefix + 'offers/*', new OfferController().delete);
 
 		app.get('/resources/uploads/*', function (req: Request, res: Response) {
 			const split = __dirname.split('/');

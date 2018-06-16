@@ -171,10 +171,6 @@ export class VendorController {
 		let errorMessage;
 		if (!Validations.isNameValid(vendor.name)) {
 			errorMessage = Constants.RESPONSE_INVALID_NAME;
-		// } else if (vendor.email && !Validations.isEmailValid(vendor.email)) {
-		// 	errorMessage = Constants.RESPONSE_INVALID_EMAIL;
-		// } else if (Utils.nullToObject(vendor.image, '').length === 0) {
-		// 	errorMessage = Constants.RESPONSE_INVALID_IMAGE;
 		} else if (vendor.description && vendor.description.length === 0) {
 			errorMessage = Constants.RESPONSE_INVALID_DESCRIPTION;
 		} else if (vendor.website && vendor.website.length === 0) {
@@ -193,7 +189,6 @@ export class VendorController {
 		}
 
 		const updateIntoDB = () => {
-			console.log(req.body.id);
 			dbHelper.db.collection(Constants.DB_COLLECTIONS.VENDOR).updateOne(
 				{ '_id': new ObjectId(req.body.id) },
 				{ $set: vendor }
@@ -213,24 +208,22 @@ export class VendorController {
 		};
 
 		const saveImage = () => {
-			// if (vendor.image && vendor.image !== 'no_change') {
-			// 	console.log(vendor.image);
-			// 	const base64Data = vendor.image.replace(/^data:image\/png;base64,/, '');
-			// 	const fileName = Date.now() + '.png';
+			if (vendor.imagePath) {
+				const base64Data = vendor.imagePath.replace(/^data:image\/png;base64,/, '');
+				const fileName = Date.now() + '.png';
 
-			// 	require('fs').writeFile(Constants.FILE_UPLOAD_PATH + fileName, base64Data, 'base64', function (err: any) {
-			// 		if (err) {
-			// 			vendor.image = null;
-			// 		} else {
-			// 			vendor.image = Constants.FILE_UPLOAD_PATH + fileName;
-			// 		}
+				require('fs').writeFile(Constants.FILE_UPLOAD_PATH + fileName, base64Data, 'base64', function (err: any) {
+					if (err) {
+						delete vendor.imagePath;
+					} else {
+						vendor.imagePath = fileName;
+					}
 
-			// 		updateIntoDB();
-			// 	});
-			// } else {
-			// 	delete vendor.image;
-			// 	updateIntoDB();
-			// }
+					updateIntoDB();
+				});
+			} else {
+				updateIntoDB();
+			}
 		};
 
 		const tokenController = new TokenController(dbHelper.db);
