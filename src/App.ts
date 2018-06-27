@@ -61,7 +61,7 @@ class App {
 		app.delete(urlPrefix + 'vendors/*', new VendorController().delete);
 		app.post(urlPrefix + 'offers', new OfferController().add);
 		// app.put(urlPrefix + 'offers', new OfferController().update);
-		// app.get(urlPrefix + 'offers/*', new OfferController().list);
+		app.get(urlPrefix + 'offers/*', new OfferController().list);
 		// app.delete(urlPrefix + 'offers/*', new OfferController().delete);
 
 		app.get('/resources/uploads/*', function (req: Request, res: Response) {

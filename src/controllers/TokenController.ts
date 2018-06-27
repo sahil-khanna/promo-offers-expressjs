@@ -10,6 +10,7 @@ export interface TokenValidationResponse {
 	userId: string;
 }
 
+// TODO: No need to store old tokens in DB
 export class TokenController {
 
 	private db: Db;
